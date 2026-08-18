@@ -1,0 +1,67 @@
+# WaveRouter
+
+A small Windows tray app that automatically routes a newly launched app's audio output to the
+correct [Elgato Wave Link](https://www.elgato.com/wave-link) track — no more opening Wave Link and
+reassigning the source by hand every time a game or app starts making noise.
+
+## How it works
+
+WaveRouter watches for new Windows audio sessions in the background. When one starts and you've
+already told it which Wave Link track that app belongs to, it routes it there automatically. The
+first time it sees an app it doesn't know, it asks once and remembers the choice.
+
+- **Rules**: simple `executable → Wave Link track` associations, managed from a small window
+  (tray icon → "Open rules").
+- **Automatic detection**: a background watcher picks up new audio sessions as they start.
+- **Automatic routing**: matched sessions are routed via the same (undocumented) mechanism
+  Windows itself uses for *Settings → System → Sound → App volume and device preferences* — no
+  admin rights needed.
+- **Import**: existing app↔track assignments already made inside Wave Link, or directly in
+  Windows, can be imported in one click instead of re-creating them by hand.
+- **Live sync**: new assignments made inside Wave Link's own UI are picked up automatically.
+- **Settings**: dark/light theme and French/English language, switched live, no restart needed.
+
+See [`docs/use-cases/`](docs/use-cases/) for the detailed behavior of each feature and
+[`ROADMAP.md`](ROADMAP.md) for what's done and what's next.
+
+## Requirements
+
+- Windows 10/11
+- [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [Elgato Wave Link](https://www.elgato.com/wave-link) (for the virtual audio tracks to route to)
+
+## Building from source
+
+```
+git clone <this-repo>
+cd WaveRouter
+dotnet build WaveRouter.slnx
+```
+
+Run `src/WaveRouter/bin/Debug/net10.0-windows/WaveRouter.exe`, or `dotnet run --project src/WaveRouter`.
+
+## Stack
+
+.NET 10, WPF (MVVM, hand-rolled — no third-party MVVM framework), NAudio for Core Audio session
+detection, and direct P/Invoke into an undocumented WinRT-internal Windows API for per-application
+audio routing (see [Third-Party Notices](THIRD-PARTY-NOTICES.md) — that part is ported from
+[EarTrumpet](https://github.com/File-New-Project/EarTrumpet)).
+
+## Project structure
+
+```
+src/
+  WaveRouter.Core/            # pure domain, zero Windows dependency
+  WaveRouter.Infrastructure/  # NAudio, Windows/WinRT interop, JSON persistence
+  WaveRouter/                 # WPF app, tray icon, composition root
+```
+
+## Status
+
+Solo hobby project, built to solve a personal annoyance. No warranty, no support commitment —
+issues and PRs are welcome but there's no dedicated support channel.
+
+## License
+
+Not licensed for reuse yet — the source is public to read, but no permission is granted to copy,
+modify, or redistribute it. This may change later.

@@ -63,5 +63,4 @@ issues and PRs are welcome but there's no dedicated support channel.
 
 ## License
 
-Not licensed for reuse yet — the source is public to read, but no permission is granted to copy,
-modify, or redistribute it. This may change later.
+[MIT](LICENSE) — see also [Third-Party Notices](THIRD-PARTY-NOTICES.md) for the EarTrumpet-derived code.

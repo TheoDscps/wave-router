@@ -52,6 +52,48 @@ public class RuleMatcherTests
         Assert.Null(RuleMatcher.FindMatch([], "discord"));
     }
 
+    [Theory]
+    [InlineData("chrome*", "chrome")]
+    [InlineData("chrome*", "chrome_beta")]
+    [InlineData("chrome*", "CHROME_CANARY")]
+    [InlineData("*helper", "gpu_helper")]
+    [InlineData("game?", "game1")]
+    public void FindMatch_SupportsWildcardPatterns(string pattern, string processName)
+    {
+        var rules = new List<Rule> { new(pattern, "Game") };
+
+        var match = RuleMatcher.FindMatch(rules, processName);
+
+        Assert.NotNull(match);
+    }
+
+    [Theory]
+    [InlineData("chrome*", "opera")]
+    [InlineData("game?", "game10")]
+    [InlineData("game?", "game")]
+    public void FindMatch_WildcardPattern_DoesNotMatchUnrelatedOrWrongLength(string pattern, string processName)
+    {
+        var rules = new List<Rule> { new(pattern, "Game") };
+
+        Assert.Null(RuleMatcher.FindMatch(rules, processName));
+    }
+
+    [Fact]
+    public void FindMatch_PlainPatternWithoutWildcard_StillRequiresExactMatch()
+    {
+        var rules = new List<Rule> { new("chrome.exe", "Browser") };
+
+        Assert.Null(RuleMatcher.FindMatch(rules, "chrome_beta"));
+    }
+
+    [Fact]
+    public void IsIgnored_SupportsWildcardPatterns()
+    {
+        var ignored = new List<string> { "obs*" };
+
+        Assert.True(RuleMatcher.IsIgnored(ignored, "obs64"));
+    }
+
     [Fact]
     public void IsIgnored_IsTrue_ForNormalizedMatch()
     {

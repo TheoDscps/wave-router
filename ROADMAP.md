@@ -18,7 +18,7 @@ Living document — update after each completed task or scope change.
 - [x] Popup prompting the user to route an app the first time it's seen unconfigured, with a persisted "ignore this app" choice — not originally in the use case docs, added based on user feedback; covers most of what routing-notifications.md's "notify on routing" describes too
 - [x] Live sync from Wave Link's own Automixer (`WaveLinkSyncCoordinator` watches its config file, silently imports new app↔track assignments as Wave Link learns them) + a manual "import existing assignments" button merging that with Windows' per-app setting for currently-running apps — not originally in the use case docs, added based on user feedback
 - [ ] Discreet notifications when an automatic routing happens (the settings on/off toggle specifically — success/failure balloons already exist) — [use case](docs/use-cases/routing-notifications.md)
-- [ ] Pattern-based rules (partial process name, wildcard) instead of exact match only
+- [x] Pattern-based rules (`*`/`?` wildcards, e.g. `"chrome*"`) — falls back to exact match for patterns with no wildcard, so pre-existing rules keep behaving identically
 - [x] Routing history/log — in-memory, capped at 200 entries, viewable from the tray menu ("Historique")
 - [x] Settings window (theme: dark/light, language: fr/en) with live switching, persisted to `settings.json` — not originally in the use case docs, added based on user feedback
 - [x] Full French/English localization of the UI (main window, new-app prompt, tray menu/balloons) via a lightweight in-memory catalog, no restart needed to switch

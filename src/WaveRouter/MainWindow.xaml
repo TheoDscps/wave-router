@@ -135,7 +135,8 @@
                     <StackPanel>
 
                         <TextBlock Text="{loc:Translate MainWindow.ExecutableLabel}" Style="{StaticResource TextSecondary}" Margin="0,0,0,6" />
-                        <TextBox Text="{Binding ExecutableName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,20" />
+                        <TextBox Text="{Binding ExecutableName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,20"
+                                 ToolTip="{loc:Translate MainWindow.ExecutableWildcardHint}" />
 
                         <TextBlock Text="{loc:Translate MainWindow.TrackLabel}" Style="{StaticResource TextSecondary}" Margin="0,0,0,6" />
                         <ComboBox ItemsSource="{Binding DataContext.AvailableTracks, RelativeSource={RelativeSource AncestorType=Window}}"

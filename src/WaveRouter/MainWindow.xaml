@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:conv="clr-namespace:WaveRouter.Converters"
         Title="WaveRouter"
-        Width="760" Height="500" MinWidth="480" MinHeight="360">
+        Width="760" Height="500" MinWidth="480" MinHeight="360"
+        Background="{DynamicResource BgBaseBrush}">
 
     <Window.Resources>
         <conv:NullToVisibilityConverter x:Key="NullToVisibility" />

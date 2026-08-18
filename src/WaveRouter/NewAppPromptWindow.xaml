@@ -4,7 +4,8 @@
         Title="Nouvelle app détectée"
         Width="380" SizeToContent="Height" ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen" Topmost="True"
-        ShowInTaskbar="False">
+        ShowInTaskbar="False"
+        Background="{DynamicResource BgBaseBrush}">
     <StackPanel Margin="{StaticResource PaddingCard}">
 
         <TextBlock Text="Nouvelle app détectée" Style="{StaticResource Heading}" Margin="0,0,0,4" />

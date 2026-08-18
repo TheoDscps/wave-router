@@ -1,0 +1,32 @@
+# ROADMAP — WaveRouter
+
+Living document — update after each completed task or scope change.
+
+## MVP
+
+- [ ] Automatic detection of new audio sessions (new app producing sound) — [use case](docs/use-cases/audio-session-detection.md)
+- [ ] Rule engine: `executable → Wave Link track` matching — [use case](docs/use-cases/automatic-routing-enforcement.md)
+- [ ] Automatic routing enforcement (switch the app's audio output to the matched track) — [use case](docs/use-cases/automatic-routing-enforcement.md)
+- [ ] Simple UI to manage rules (add / edit / delete an app ↔ track association) — [use case](docs/use-cases/rule-management.md)
+- [ ] Local rule persistence (JSON file) — [use case](docs/use-cases/rule-persistence.md)
+- [ ] Background execution via system tray icon — [use case](docs/use-cases/background-tray-execution.md)
+
+## v1
+
+- [ ] Auto-start with Windows — [use case](docs/use-cases/windows-autostart.md)
+- [ ] Dynamic reading of Wave Link's available tracks/Local Inputs (instead of manual entry) — [use case](docs/use-cases/read-wave-link-tracks.md)
+- [ ] Discreet notifications when an automatic routing happens — [use case](docs/use-cases/routing-notifications.md)
+- [ ] Pattern-based rules (partial process name, wildcard) instead of exact match only
+- [ ] Routing history/log
+
+## v2
+
+- [ ] Rule profiles (e.g. different rule sets for streaming vs. solo recording)
+- [ ] Import/export rules
+
+## Out of scope
+
+- Support for other mixing software (OBS, Voicemeeter, etc.)
+- Cross-platform support (Mac/Linux) — Windows only
+- Cloud sync of rules
+- Microphone/input routing

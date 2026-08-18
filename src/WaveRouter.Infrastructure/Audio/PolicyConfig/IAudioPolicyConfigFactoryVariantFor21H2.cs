@@ -48,8 +48,11 @@ internal interface IAudioPolicyConfigFactoryVariantFor21H2
     [PreserveSig]
     HRESULT SetPersistedDefaultAudioEndpoint(uint processId, DataFlow flow, Role role, IntPtr deviceId);
 
+    /// <summary>deviceId is a raw HSTRING handle (see <see cref="Combase.ReadAndDeleteHString"/>) —
+    /// [MarshalAs(UnmanagedType.HString)] hits the same "not supported in the .NET runtime" wall as
+    /// IInspectable does elsewhere in this port.</summary>
     [PreserveSig]
-    HRESULT GetPersistedDefaultAudioEndpoint(uint processId, DataFlow flow, Role role, [Out, MarshalAs(UnmanagedType.HString)] out string deviceId);
+    HRESULT GetPersistedDefaultAudioEndpoint(uint processId, DataFlow flow, Role role, out IntPtr deviceId);
 
     [PreserveSig]
     HRESULT ClearAllPersistedApplicationDefaultEndpoints();

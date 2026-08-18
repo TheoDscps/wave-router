@@ -15,6 +15,29 @@
          re-paints already-rendered UI. Non-color tokens (font, radius, spacing, effect, duration) use
          StaticResource since they never change between themes. -->
 
+    <Style TargetType="ToolTip">
+        <Setter Property="Background" Value="{DynamicResource BgSurfaceElevatedBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="{StaticResource PaddingControl}" />
+        <Setter Property="FontFamily" Value="{StaticResource FontPrimary}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource RadiusSm}"
+                            Effect="{StaticResource ShadowSm}">
+                        <ContentPresenter Margin="{TemplateBinding Padding}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Keyboard focus ring: 2px accent outline, offset — WPF's equivalent of a visible focus style. -->
     <Style x:Key="FocusRing" TargetType="Control">
         <Setter Property="FocusVisualStyle">

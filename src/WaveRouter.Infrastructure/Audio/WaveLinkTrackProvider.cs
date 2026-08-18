@@ -12,8 +12,6 @@ namespace WaveRouter.Infrastructure.Audio;
 /// </summary>
 public sealed class WaveLinkTrackProvider : ITrackProvider
 {
-    private const string VendorSuffix = " (Elgato Virtual Audio)";
-
     public IReadOnlyList<string> GetAvailableTracks()
     {
         using var enumerator = new MMDeviceEnumerator();
@@ -21,9 +19,9 @@ public sealed class WaveLinkTrackProvider : ITrackProvider
 
         foreach (var device in enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active))
         {
-            if (device.FriendlyName.EndsWith(VendorSuffix, StringComparison.OrdinalIgnoreCase))
+            if (WaveLinkDevices.TryGetTrackName(device.FriendlyName) is { } track)
             {
-                tracks.Add(device.FriendlyName[..^VendorSuffix.Length]);
+                tracks.Add(track);
             }
         }
 

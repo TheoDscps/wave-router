@@ -1,4 +1,5 @@
 using System.Windows.Forms;
+using WaveRouter.Core.Abstractions;
 using WaveRouter.Infrastructure.Audio;
 using WaveRouter.Routing;
 using WaveRouter.ViewModels;
@@ -18,10 +19,9 @@ public sealed class TrayIconManager : IDisposable
     private MainWindow? _mainWindow;
     private StyleGuideWindow? _styleGuideWindow;
 
-    public TrayIconManager(RuleListViewModel ruleListViewModel)
+    public TrayIconManager(RuleListViewModel ruleListViewModel, IAudioRouter router)
     {
         _ruleListViewModel = ruleListViewModel;
-        var router = new PolicyConfigAudioRouter();
         _matchCoordinator = new RuleMatchCoordinator(new AudioSessionWatcher(), router, ruleListViewModel);
         _promptCoordinator = new NewAppPromptCoordinator(_matchCoordinator, router, ruleListViewModel);
 

@@ -43,14 +43,21 @@ public partial class App : System.Windows.Application
         var services = new ServiceCollection();
         services.AddSingleton<IRuleRepository, JsonRuleRepository>();
         services.AddSingleton<ITrackProvider, WaveLinkTrackProvider>();
+        // One shared instance backs both IAudioRouter and IExistingRoutingScanner — no reason to activate
+        // the underlying WinRT factory (see PolicyConfigAudioRouter) twice.
+        services.AddSingleton<PolicyConfigAudioRouter>();
+        services.AddSingleton<IAudioRouter>(sp => sp.GetRequiredService<PolicyConfigAudioRouter>());
+        services.AddSingleton<IExistingRoutingScanner>(sp => sp.GetRequiredService<PolicyConfigAudioRouter>());
         _services = services.BuildServiceProvider();
 
         var repository = _services.GetRequiredService<IRuleRepository>();
         var trackProvider = _services.GetRequiredService<ITrackProvider>();
+        var routingScanner = _services.GetRequiredService<IExistingRoutingScanner>();
+        var router = _services.GetRequiredService<IAudioRouter>();
         var initialLoad = await repository.LoadAsync();
-        var ruleListViewModel = new RuleListViewModel(repository, trackProvider, initialLoad);
+        var ruleListViewModel = new RuleListViewModel(repository, trackProvider, routingScanner, initialLoad);
 
-        _tray = new TrayIconManager(ruleListViewModel);
+        _tray = new TrayIconManager(ruleListViewModel, router);
         _tray.Start();
         _instanceGuard.ListenForActivationRequests(() => _tray.ShowMainWindow());
     }

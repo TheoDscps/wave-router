@@ -16,14 +16,16 @@ namespace WaveRouter.ViewModels;
 public sealed class RuleListViewModel : ObservableObject
 {
     private readonly IRuleRepository _repository;
+    private readonly IExistingRoutingScanner _routingScanner;
     private readonly List<string> _ignoredExecutables;
     private RuleViewModel? _selectedRule;
     private string? _validationError;
     private string? _statusMessage;
 
-    public RuleListViewModel(IRuleRepository repository, ITrackProvider trackProvider, RuleStoreLoadResult initialLoad)
+    public RuleListViewModel(IRuleRepository repository, ITrackProvider trackProvider, IExistingRoutingScanner routingScanner, RuleStoreLoadResult initialLoad)
     {
         _repository = repository;
+        _routingScanner = routingScanner;
         Rules = new ObservableCollection<RuleViewModel>(initialLoad.Store.Rules.Select(r => new RuleViewModel(r)));
         _ignoredExecutables = [.. initialLoad.Store.IgnoredExecutables];
         _statusMessage = initialLoad.Warning;
@@ -32,6 +34,7 @@ public sealed class RuleListViewModel : ObservableObject
         AddRuleCommand = new RelayCommand(_ => AddRule());
         SaveRuleCommand = new RelayCommand(async _ => await SaveSelectedRuleAsync());
         DeleteRuleCommand = new RelayCommand(async _ => await DeleteSelectedRuleAsync());
+        ImportExistingAssignmentsCommand = new RelayCommand(async _ => await ImportExistingAssignmentsAsync());
     }
 
     public ObservableCollection<RuleViewModel> Rules { get; }
@@ -65,6 +68,7 @@ public sealed class RuleListViewModel : ObservableObject
     public RelayCommand AddRuleCommand { get; }
     public RelayCommand SaveRuleCommand { get; }
     public RelayCommand DeleteRuleCommand { get; }
+    public RelayCommand ImportExistingAssignmentsCommand { get; }
 
     private void AddRule()
     {
@@ -95,6 +99,59 @@ public sealed class RuleListViewModel : ObservableObject
 
         _ignoredExecutables.Add(executableName);
         await PersistAsync();
+    }
+
+    /// <summary>Scans currently running processes for audio routing already assigned at the Windows level
+    /// (e.g. set manually via Settings before WaveRouter existed) and creates rules for any that aren't
+    /// already covered. Only running processes can be checked — Windows resolves the persisted assignment
+    /// via a live PID, there's no way to query "what's assigned to chrome.exe in general".</summary>
+    private async Task ImportExistingAssignmentsAsync()
+    {
+        var imported = 0;
+
+        foreach (var process in System.Diagnostics.Process.GetProcesses())
+        {
+            using (process)
+            {
+                try
+                {
+                    var track = _routingScanner.GetExistingTrackAssignment(process.Id);
+                    if (track is null)
+                    {
+                        continue;
+                    }
+
+                    var executableName = process.ProcessName;
+                    var alreadyCovered = Rules.Any(r => !r.IsNew &&
+                        string.Equals(RuleMatcher.NormalizeExecutableName(r.ExecutableName), RuleMatcher.NormalizeExecutableName(executableName), StringComparison.OrdinalIgnoreCase));
+                    if (alreadyCovered)
+                    {
+                        continue;
+                    }
+
+                    var rule = new RuleViewModel { ExecutableName = executableName, TrackName = track };
+                    rule.MarkSaved();
+                    Rules.Add(rule);
+                    imported++;
+                }
+                catch (InvalidOperationException)
+                {
+                    // Process exited between enumeration and inspection — skip it.
+                }
+            }
+        }
+
+        if (imported > 0)
+        {
+            await PersistAsync();
+        }
+
+        StatusMessage = imported switch
+        {
+            0 => "No existing Windows-level audio assignment found to import.",
+            1 => "Imported 1 existing assignment.",
+            _ => $"Imported {imported} existing assignments.",
+        };
     }
 
     private async Task SaveSelectedRuleAsync()

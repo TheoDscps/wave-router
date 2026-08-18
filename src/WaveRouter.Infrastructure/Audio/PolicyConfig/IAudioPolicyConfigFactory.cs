@@ -9,4 +9,7 @@ namespace WaveRouter.Infrastructure.Audio.PolicyConfig;
 internal interface IAudioPolicyConfigFactory
 {
     HRESULT SetPersistedDefaultAudioEndpoint(uint processId, DataFlow flow, Role role, IntPtr deviceId);
+
+    /// <summary>deviceId is a raw HSTRING handle — read it with <see cref="Combase.ReadAndDeleteHString"/>.</summary>
+    HRESULT GetPersistedDefaultAudioEndpoint(uint processId, DataFlow flow, Role role, out IntPtr deviceId);
 }

@@ -28,6 +28,10 @@ internal static class Combase
     [DllImport("combase.dll", PreserveSig = false)]
     public static extern void WindowsDeleteString(IntPtr hstring);
 
+    /// <summary>Native signature returns the buffer pointer directly (not an HRESULT) — no PreserveSig needed.</summary>
+    [DllImport("combase.dll")]
+    private static extern IntPtr WindowsGetStringRawBuffer(IntPtr hstring, out uint length);
+
     /// <summary>Creates an HSTRING for <paramref name="value"/>, runs <paramref name="action"/> with it, and
     /// always deletes it afterward — HSTRINGs are not GC-tracked and must be released explicitly.</summary>
     public static void WithHString(string value, Action<IntPtr> action)
@@ -36,6 +40,26 @@ internal static class Combase
         try
         {
             action(hstring);
+        }
+        finally
+        {
+            WindowsDeleteString(hstring);
+        }
+    }
+
+    /// <summary>Reads an HSTRING returned from an out-parameter (e.g. GetPersistedDefaultAudioEndpoint) into
+    /// a managed string, then releases it. HSTRING.IntPtr.Zero (the empty string singleton) reads as "".</summary>
+    public static string ReadAndDeleteHString(IntPtr hstring)
+    {
+        if (hstring == IntPtr.Zero)
+        {
+            return string.Empty;
+        }
+
+        try
+        {
+            var buffer = WindowsGetStringRawBuffer(hstring, out var length);
+            return buffer == IntPtr.Zero ? string.Empty : Marshal.PtrToStringUni(buffer, (int)length);
         }
         finally
         {

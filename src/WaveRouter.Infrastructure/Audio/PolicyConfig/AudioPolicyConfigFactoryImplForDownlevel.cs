@@ -23,4 +23,7 @@ internal sealed class AudioPolicyConfigFactoryImplForDownlevel : IAudioPolicyCon
 
     public HRESULT SetPersistedDefaultAudioEndpoint(uint processId, DataFlow flow, Role role, IntPtr deviceId) =>
         _factory.SetPersistedDefaultAudioEndpoint(processId, flow, role, deviceId);
+
+    public HRESULT GetPersistedDefaultAudioEndpoint(uint processId, DataFlow flow, Role role, out IntPtr deviceId) =>
+        _factory.GetPersistedDefaultAudioEndpoint(processId, flow, role, out deviceId);
 }

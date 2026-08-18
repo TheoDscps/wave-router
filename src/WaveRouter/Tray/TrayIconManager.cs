@@ -1,5 +1,6 @@
 using System.Windows.Forms;
 using WaveRouter.Audio;
+using WaveRouter.ViewModels;
 
 namespace WaveRouter.Tray;
 
@@ -9,13 +10,15 @@ namespace WaveRouter.Tray;
 /// </summary>
 public sealed class TrayIconManager : IDisposable
 {
+    private readonly RuleListViewModel _ruleListViewModel;
     private readonly NotifyIcon _icon;
     private readonly AudioSessionWatcher _watcher = new();
     private MainWindow? _mainWindow;
     private StyleGuideWindow? _styleGuideWindow;
 
-    public TrayIconManager()
+    public TrayIconManager(RuleListViewModel ruleListViewModel)
     {
+        _ruleListViewModel = ruleListViewModel;
         var menu = new ContextMenuStrip();
         menu.Items.Add("Ouvrir les règles", null, (_, _) => ShowMainWindow());
         menu.Items.Add("Style guide", null, (_, _) => ShowStyleGuide());
@@ -40,7 +43,7 @@ public sealed class TrayIconManager : IDisposable
 
     private void ShowMainWindow()
     {
-        _mainWindow ??= new MainWindow();
+        _mainWindow ??= new MainWindow(_ruleListViewModel);
         _mainWindow.Show();
         _mainWindow.Activate();
     }

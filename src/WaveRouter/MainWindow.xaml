@@ -1,33 +1,89 @@
 <Window x:Class="WaveRouter.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:conv="clr-namespace:WaveRouter.Converters"
         Title="WaveRouter"
         Width="640" Height="420" MinWidth="360" MinHeight="280">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
 
-        <!-- Rule list sidebar -->
-        <Border Grid.Column="0" Background="{DynamicResource BgSurfaceBrush}"
-                BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,1,0">
-            <DockPanel Margin="{StaticResource PaddingCard}">
-                <TextBlock DockPanel.Dock="Top" Text="Règles" Style="{StaticResource Heading}"
-                           Margin="0,0,0,16" />
-                <Button DockPanel.Dock="Bottom" Content="+ Ajouter une règle" Style="{StaticResource AccentButton}"
-                        HorizontalAlignment="Stretch" />
-                <TextBlock DockPanel.Dock="Top" Text="Aucune règle pour le moment."
-                           Style="{StaticResource TextSecondary}" TextWrapping="Wrap" />
-            </DockPanel>
+    <Window.Resources>
+        <conv:NullToVisibilityConverter x:Key="NullToVisibility" />
+    </Window.Resources>
+
+    <DockPanel>
+
+        <!-- Persistence warning/error banner -->
+        <Border DockPanel.Dock="Top"
+                Background="{DynamicResource BgSurfaceElevatedBrush}"
+                BorderBrush="{DynamicResource WarningBrush}" BorderThickness="0,0,0,1"
+                Padding="{StaticResource PaddingControl}"
+                Visibility="{Binding StatusMessage, Converter={StaticResource NullToVisibility}}">
+            <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource WarningBrush}" TextWrapping="Wrap" />
         </Border>
 
-        <!-- Detail / empty state -->
-        <Grid Grid.Column="1" Background="{DynamicResource BgBaseBrush}">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="320">
-                <TextBlock Text="Sélectionne une règle, ou ajoutes-en une nouvelle."
-                           Style="{StaticResource TextSecondary}" TextAlignment="Center" TextWrapping="Wrap" />
-            </StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Rule list sidebar -->
+            <Border Grid.Column="0" Background="{DynamicResource BgSurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,1,0">
+                <DockPanel Margin="{StaticResource PaddingCard}">
+                    <TextBlock DockPanel.Dock="Top" Text="Règles" Style="{StaticResource Heading}"
+                               Margin="0,0,0,16" />
+                    <Button DockPanel.Dock="Bottom" Content="+ Ajouter une règle" Style="{StaticResource AccentButton}"
+                            Command="{Binding AddRuleCommand}" HorizontalAlignment="Stretch" Margin="0,12,0,0" />
+
+                    <ListBox ItemsSource="{Binding Rules}" SelectedItem="{Binding SelectedRule}"
+                             Background="Transparent" BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,4">
+                                    <TextBlock Text="{Binding ExecutableName}" FontWeight="{StaticResource FontWeightSemiBold}" />
+                                    <TextBlock Text="{Binding TrackName}" Style="{StaticResource MonoText}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <!-- Detail / empty state -->
+            <Grid Grid.Column="1" Background="{DynamicResource BgBaseBrush}">
+
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="320"
+                            Visibility="{Binding SelectedRule, Converter={StaticResource NullToVisibility}, ConverterParameter=Invert}">
+                    <TextBlock Text="Sélectionne une règle, ou ajoutes-en une nouvelle."
+                               Style="{StaticResource TextSecondary}" TextAlignment="Center" TextWrapping="Wrap" />
+                </StackPanel>
+
+                <StackPanel Margin="24" MaxWidth="360" HorizontalAlignment="Left"
+                            DataContext="{Binding SelectedRule}"
+                            Visibility="{Binding Converter={StaticResource NullToVisibility}, RelativeSource={RelativeSource Self}}">
+
+                    <TextBlock Text="Exécutable" Style="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                    <TextBox Text="{Binding ExecutableName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16" />
+
+                    <TextBlock Text="Piste Wave Link" Style="{StaticResource TextSecondary}" Margin="0,0,0,4" />
+                    <TextBox Text="{Binding TrackName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16" />
+
+                    <TextBlock Text="{Binding DataContext.ValidationError, RelativeSource={RelativeSource AncestorType=Window}}"
+                               Foreground="{DynamicResource ErrorBrush}" TextWrapping="Wrap" Margin="0,0,0,12"
+                               Visibility="{Binding DataContext.ValidationError, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource NullToVisibility}}" />
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Enregistrer" Style="{StaticResource AccentButton}"
+                                Command="{Binding DataContext.SaveRuleCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                Margin="0,0,12,0" />
+                        <Button Content="Supprimer"
+                                Command="{Binding DataContext.DeleteRuleCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    </StackPanel>
+
+                </StackPanel>
+
+            </Grid>
         </Grid>
-    </Grid>
+
+    </DockPanel>
 </Window>

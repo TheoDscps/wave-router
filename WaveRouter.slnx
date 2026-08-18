@@ -1,5 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/WaveRouter/WaveRouter.csproj" />
+    <Project Path="src/WaveRouter.Core/WaveRouter.Core.csproj" />
+    <Project Path="src/WaveRouter.Infrastructure/WaveRouter.Infrastructure.csproj" />
   </Folder>
 </Solution>

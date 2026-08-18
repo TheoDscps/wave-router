@@ -128,6 +128,11 @@ public sealed class TrayIconManager : IDisposable
         _routingHistory.Record(new RoutingHistoryEntry(
             DateTime.Now, result.Session.DisplayName, result.Session.ProcessName, rule.TrackName, success, result.Routing?.ErrorMessage));
 
+        if (!_settingsViewModel.ShowNotifications)
+        {
+            return;
+        }
+
         if (success)
         {
             _icon.BalloonTipTitle = LocalizationManager.Translate("Tray.RoutingDoneTitle");

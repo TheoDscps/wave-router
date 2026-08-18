@@ -51,6 +51,7 @@ internal static class AppStrings
         ["Settings.StartWithWindows"] = "Démarrer avec Windows",
         ["Settings.StartWithWindowsFailedTitle"] = "Échec",
         ["Settings.StartWithWindowsFailedMessage"] = "Impossible de modifier le démarrage automatique avec Windows.",
+        ["Settings.ShowNotifications"] = "Notifications de routage",
         ["Settings.Close"] = "Fermer",
 
         ["History.Title"] = "Historique",
@@ -104,6 +105,7 @@ internal static class AppStrings
         ["Settings.StartWithWindows"] = "Start with Windows",
         ["Settings.StartWithWindowsFailedTitle"] = "Failed",
         ["Settings.StartWithWindowsFailedMessage"] = "Could not update the Windows startup setting.",
+        ["Settings.ShowNotifications"] = "Routing notifications",
         ["Settings.Close"] = "Close",
 
         ["History.Title"] = "History",

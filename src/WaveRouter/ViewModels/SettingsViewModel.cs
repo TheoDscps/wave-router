@@ -8,10 +8,10 @@ using MessageBoxImage = System.Windows.MessageBoxImage;
 
 namespace WaveRouter.ViewModels;
 
-/// <summary>Backs <see cref="SettingsWindow"/>: theme, language, and Windows startup registration —
-/// all applied immediately. Theme/language are persisted to settings.json; startup registration has no
-/// separate persisted flag, the Windows Run registry key itself is the source of truth (see
-/// <see cref="IStartupRegistration"/>).</summary>
+/// <summary>Backs <see cref="SettingsWindow"/>: theme, language, notification toggle, and Windows startup
+/// registration — all applied immediately. Theme/language/notifications are persisted to settings.json;
+/// startup registration has no separate persisted flag, the Windows Run registry key itself is the source
+/// of truth (see <see cref="IStartupRegistration"/>).</summary>
 public sealed class SettingsViewModel : ObservableObject
 {
     private readonly IAppSettingsRepository _repository;
@@ -19,6 +19,7 @@ public sealed class SettingsViewModel : ObservableObject
     private AppTheme _theme;
     private string _language;
     private bool _startWithWindows;
+    private bool _showNotifications;
 
     public SettingsViewModel(IAppSettingsRepository repository, IStartupRegistration startupRegistration, AppSettings initial)
     {
@@ -27,6 +28,7 @@ public sealed class SettingsViewModel : ObservableObject
         _theme = initial.Theme == nameof(AppTheme.Light) ? AppTheme.Light : AppTheme.Dark;
         _language = initial.Language;
         _startWithWindows = startupRegistration.IsEnabled();
+        _showNotifications = initial.ShowRoutingNotifications;
 
         SetThemeCommand = new RelayCommand(async theme => await SetThemeAsync((AppTheme)theme!));
         SetLanguageCommand = new RelayCommand(async language => await SetLanguageAsync((string)language!));
@@ -74,6 +76,20 @@ public sealed class SettingsViewModel : ObservableObject
         }
     }
 
+    /// <summary>Two-way bound to the Settings window checkbox. Only gates the success/failure balloon
+    /// tips (see <see cref="Tray.TrayIconManager"/>) — routing itself and the history log are unaffected.</summary>
+    public bool ShowNotifications
+    {
+        get => _showNotifications;
+        set
+        {
+            if (SetProperty(ref _showNotifications, value))
+            {
+                _ = PersistAsync();
+            }
+        }
+    }
+
     public RelayCommand SetThemeCommand { get; }
     public RelayCommand SetLanguageCommand { get; }
 
@@ -101,5 +117,5 @@ public sealed class SettingsViewModel : ObservableObject
         await PersistAsync();
     }
 
-    private Task PersistAsync() => _repository.SaveAsync(new AppSettings(Theme.ToString(), Language));
+    private Task PersistAsync() => _repository.SaveAsync(new AppSettings(Theme.ToString(), Language, ShowNotifications));
 }

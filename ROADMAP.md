@@ -20,6 +20,10 @@ Living document — update after each completed task or scope change.
 - [ ] Discreet notifications when an automatic routing happens (the settings on/off toggle specifically — success/failure balloons already exist) — [use case](docs/use-cases/routing-notifications.md)
 - [ ] Pattern-based rules (partial process name, wildcard) instead of exact match only
 - [ ] Routing history/log
+- [x] Settings window (theme: dark/light, language: fr/en) with live switching, persisted to `settings.json` — not originally in the use case docs, added based on user feedback
+- [x] Full French/English localization of the UI (main window, new-app prompt, tray menu/balloons) via a lightweight in-memory catalog, no restart needed to switch
+- [x] Dismiss ("✕") button on the persistence status banner — not originally in the use case docs, added based on user feedback
+- [x] Custom app icon (waveform glyph, matches the app's own visual language) replacing the default system icon in the exe, taskbar, and tray — not originally in the use case docs, added based on user feedback
 
 ## v2
 

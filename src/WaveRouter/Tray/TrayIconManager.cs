@@ -1,6 +1,7 @@
 using System.Windows.Forms;
 using WaveRouter.Core.Abstractions;
 using WaveRouter.Infrastructure.Audio;
+using WaveRouter.Localization;
 using WaveRouter.Routing;
 using WaveRouter.ViewModels;
 
@@ -13,34 +14,47 @@ namespace WaveRouter.Tray;
 public sealed class TrayIconManager : IDisposable
 {
     private readonly RuleListViewModel _ruleListViewModel;
+    private readonly SettingsViewModel _settingsViewModel;
     private readonly NotifyIcon _icon;
+    private readonly ToolStripMenuItem _openRulesItem;
+    private readonly ToolStripMenuItem _settingsItem;
+    private readonly ToolStripMenuItem _quitItem;
     private readonly RuleMatchCoordinator _matchCoordinator;
     private readonly NewAppPromptCoordinator _promptCoordinator;
     private readonly WaveLinkSyncCoordinator _syncCoordinator;
     private MainWindow? _mainWindow;
     private StyleGuideWindow? _styleGuideWindow;
+    private SettingsWindow? _settingsWindow;
 
-    public TrayIconManager(RuleListViewModel ruleListViewModel, IAudioRouter router)
+    public TrayIconManager(RuleListViewModel ruleListViewModel, SettingsViewModel settingsViewModel, IAudioRouter router)
     {
         _ruleListViewModel = ruleListViewModel;
+        _settingsViewModel = settingsViewModel;
         _matchCoordinator = new RuleMatchCoordinator(new AudioSessionWatcher(), router, ruleListViewModel);
         _promptCoordinator = new NewAppPromptCoordinator(_matchCoordinator, router, ruleListViewModel);
         _syncCoordinator = new WaveLinkSyncCoordinator(ruleListViewModel);
 
         var menu = new ContextMenuStrip();
-        menu.Items.Add("Ouvrir les règles", null, (_, _) => ShowMainWindow());
-        menu.Items.Add("Style guide", null, (_, _) => ShowStyleGuide());
+        _openRulesItem = new ToolStripMenuItem(LocalizationManager.Translate("Tray.OpenRules"), null, (_, _) => ShowMainWindow());
+        _settingsItem = new ToolStripMenuItem(LocalizationManager.Translate("Tray.Settings"), null, (_, _) => ShowSettingsWindow());
+        _quitItem = new ToolStripMenuItem(LocalizationManager.Translate("Tray.Quit"), null, (_, _) => System.Windows.Application.Current.Shutdown());
+        menu.Items.Add(_openRulesItem);
+        menu.Items.Add(_settingsItem);
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add("Quitter", null, (_, _) => System.Windows.Application.Current.Shutdown());
+        menu.Items.Add(_quitItem);
 
         _icon = new NotifyIcon
         {
-            Icon = System.Drawing.SystemIcons.Application,
+            // Extracted from the exe's own embedded icon (see <ApplicationIcon> in WaveRouter.csproj) rather
+            // than duplicating the .ico as a loose content file.
+            Icon = System.Drawing.Icon.ExtractAssociatedIcon(System.Windows.Forms.Application.ExecutablePath)
+                ?? System.Drawing.SystemIcons.Application,
             Text = "WaveRouter",
             Visible = true,
             ContextMenuStrip = menu,
         };
         _icon.DoubleClick += (_, _) => ShowMainWindow();
+        LocalizationManager.LanguageChanged += OnLanguageChanged;
     }
 
     public void Start()
@@ -71,6 +85,20 @@ public sealed class TrayIconManager : IDisposable
         _styleGuideWindow.Activate();
     }
 
+    private void ShowSettingsWindow()
+    {
+        _settingsWindow ??= new SettingsWindow(_settingsViewModel);
+        _settingsWindow.Show();
+        _settingsWindow.Activate();
+    }
+
+    private void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        _openRulesItem.Text = LocalizationManager.Translate("Tray.OpenRules");
+        _settingsItem.Text = LocalizationManager.Translate("Tray.Settings");
+        _quitItem.Text = LocalizationManager.Translate("Tray.Quit");
+    }
+
     private void OnSessionEvaluated(object? sender, RuleMatchResult result)
     {
         if (result.MatchedRule is not { } rule)
@@ -80,13 +108,13 @@ public sealed class TrayIconManager : IDisposable
 
         if (result.Routing is { Success: true })
         {
-            _icon.BalloonTipTitle = "Routage effectué";
+            _icon.BalloonTipTitle = LocalizationManager.Translate("Tray.RoutingDoneTitle");
             _icon.BalloonTipText = $"{result.Session.DisplayName} → {rule.TrackName}";
             _icon.BalloonTipIcon = ToolTipIcon.Info;
         }
         else
         {
-            _icon.BalloonTipTitle = "Échec du routage";
+            _icon.BalloonTipTitle = LocalizationManager.Translate("Tray.RoutingFailedTitle");
             _icon.BalloonTipText = $"{result.Session.DisplayName} → {rule.TrackName} : {result.Routing?.ErrorMessage}";
             _icon.BalloonTipIcon = ToolTipIcon.Warning;
         }
@@ -96,6 +124,7 @@ public sealed class TrayIconManager : IDisposable
 
     public void Dispose()
     {
+        LocalizationManager.LanguageChanged -= OnLanguageChanged;
         _matchCoordinator.SessionEvaluated -= OnSessionEvaluated;
         _promptCoordinator.RoutingApplied -= OnSessionEvaluated;
         _syncCoordinator.Dispose();

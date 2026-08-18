@@ -10,6 +10,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <ApplicationVisualStyles>true</ApplicationVisualStyles>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
     <!-- InvariantGlobalization is incompatible with WPF's text layout engine (it needs real culture data
          for font shaping) — removed now that the app renders WPF text, not just WinForms menus. -->
   </PropertyGroup>

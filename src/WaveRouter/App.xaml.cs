@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WaveRouter.Core.Abstractions;
 using WaveRouter.Infrastructure.Audio;
 using WaveRouter.Infrastructure.Persistence;
+using WaveRouter.Localization;
 using WaveRouter.Themes;
 using WaveRouter.Tray;
 using WaveRouter.ViewModels;
@@ -38,11 +39,10 @@ public partial class App : System.Windows.Application
             return;
         }
 
-        ThemeManager.Apply(AppTheme.Dark);
-
         var services = new ServiceCollection();
         services.AddSingleton<IRuleRepository, JsonRuleRepository>();
         services.AddSingleton<ITrackProvider, WaveLinkTrackProvider>();
+        services.AddSingleton<IAppSettingsRepository, JsonAppSettingsRepository>();
         // One shared instance backs both IAudioRouter and IExistingRoutingScanner — no reason to activate
         // the underlying WinRT factory (see PolicyConfigAudioRouter) twice.
         services.AddSingleton<PolicyConfigAudioRouter>();
@@ -50,6 +50,12 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IExistingRoutingScanner>(sp => sp.GetRequiredService<PolicyConfigAudioRouter>());
         services.AddSingleton<IWaveLinkMixerConfigReader, WaveLinkMixerConfigReader>();
         _services = services.BuildServiceProvider();
+
+        var settingsRepository = _services.GetRequiredService<IAppSettingsRepository>();
+        var appSettings = await settingsRepository.LoadAsync();
+        ThemeManager.Apply(appSettings.Theme == nameof(AppTheme.Light) ? AppTheme.Light : AppTheme.Dark);
+        LocalizationManager.SetLanguage(appSettings.Language);
+        var settingsViewModel = new SettingsViewModel(settingsRepository, appSettings);
 
         var repository = _services.GetRequiredService<IRuleRepository>();
         var trackProvider = _services.GetRequiredService<ITrackProvider>();
@@ -59,7 +65,7 @@ public partial class App : System.Windows.Application
         var initialLoad = await repository.LoadAsync();
         var ruleListViewModel = new RuleListViewModel(repository, trackProvider, routingScanner, mixerConfigReader, initialLoad);
 
-        _tray = new TrayIconManager(ruleListViewModel, router);
+        _tray = new TrayIconManager(ruleListViewModel, settingsViewModel, router);
         _tray.Start();
         _instanceGuard.ListenForActivationRequests(() => _tray.ShowMainWindow());
     }

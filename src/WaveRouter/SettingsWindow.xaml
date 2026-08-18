@@ -1,0 +1,46 @@
+<Window x:Class="WaveRouter.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:WaveRouter.Localization"
+        xmlns:themes="clr-namespace:WaveRouter.Themes"
+        xmlns:conv="clr-namespace:WaveRouter.Converters"
+        Title="{loc:Translate Settings.Title}"
+        Width="360" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BgBaseBrush}">
+    <Window.Resources>
+        <conv:NotEqualToBooleanConverter x:Key="NotEqualToBoolean" />
+    </Window.Resources>
+    <StackPanel Margin="{StaticResource PaddingCard}">
+
+        <TextBlock Text="{loc:Translate Settings.Title}" Style="{StaticResource Heading}" Margin="0,0,0,20" />
+
+        <TextBlock Text="{loc:Translate Settings.Theme}" Style="{StaticResource TextSecondary}" Margin="0,0,0,6" />
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+            <Button Content="{loc:Translate Settings.ThemeDark}" Command="{Binding SetThemeCommand}"
+                    CommandParameter="{x:Static themes:AppTheme.Dark}"
+                    IsEnabled="{Binding Theme, Converter={StaticResource NotEqualToBoolean}, ConverterParameter={x:Static themes:AppTheme.Dark}}"
+                    Margin="0,0,12,0" MinWidth="100" />
+            <Button Content="{loc:Translate Settings.ThemeLight}" Command="{Binding SetThemeCommand}"
+                    CommandParameter="{x:Static themes:AppTheme.Light}"
+                    IsEnabled="{Binding Theme, Converter={StaticResource NotEqualToBoolean}, ConverterParameter={x:Static themes:AppTheme.Light}}"
+                    MinWidth="100" />
+        </StackPanel>
+
+        <TextBlock Text="{loc:Translate Settings.Language}" Style="{StaticResource TextSecondary}" Margin="0,0,0,6" />
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+            <Button Content="{loc:Translate Settings.LanguageFrench}" Command="{Binding SetLanguageCommand}"
+                    CommandParameter="fr"
+                    IsEnabled="{Binding Language, Converter={StaticResource NotEqualToBoolean}, ConverterParameter=fr}"
+                    Margin="0,0,12,0" MinWidth="100" />
+            <Button Content="{loc:Translate Settings.LanguageEnglish}" Command="{Binding SetLanguageCommand}"
+                    CommandParameter="en"
+                    IsEnabled="{Binding Language, Converter={StaticResource NotEqualToBoolean}, ConverterParameter=en}"
+                    MinWidth="100" />
+        </StackPanel>
+
+        <Button Content="{loc:Translate Settings.Close}" Style="{StaticResource AccentButton}"
+                Click="OnCloseClicked" HorizontalAlignment="Left" MinWidth="100" />
+
+    </StackPanel>
+</Window>

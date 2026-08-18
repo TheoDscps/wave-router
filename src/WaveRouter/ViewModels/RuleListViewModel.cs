@@ -3,6 +3,7 @@ using WaveRouter.Core.Abstractions;
 using WaveRouter.Core.Errors;
 using WaveRouter.Core.Models;
 using WaveRouter.Core.Rules;
+using WaveRouter.Localization;
 using WaveRouter.Mvvm;
 using MessageBox = System.Windows.MessageBox;
 using MessageBoxButton = System.Windows.MessageBoxButton;
@@ -37,6 +38,7 @@ public sealed class RuleListViewModel : ObservableObject
         SaveRuleCommand = new RelayCommand(async _ => await SaveSelectedRuleAsync());
         DeleteRuleCommand = new RelayCommand(async _ => await DeleteSelectedRuleAsync());
         ImportExistingAssignmentsCommand = new RelayCommand(async _ => await ImportExistingAssignmentsAsync());
+        ClearStatusMessageCommand = new RelayCommand(_ => StatusMessage = null);
     }
 
     public ObservableCollection<RuleViewModel> Rules { get; }
@@ -71,6 +73,7 @@ public sealed class RuleListViewModel : ObservableObject
     public RelayCommand SaveRuleCommand { get; }
     public RelayCommand DeleteRuleCommand { get; }
     public RelayCommand ImportExistingAssignmentsCommand { get; }
+    public RelayCommand ClearStatusMessageCommand { get; }
 
     private void AddRule()
     {
@@ -147,9 +150,9 @@ public sealed class RuleListViewModel : ObservableObject
 
         StatusMessage = imported switch
         {
-            0 => "No existing Wave Link or Windows audio assignment found to import.",
-            1 => "Imported 1 existing assignment.",
-            _ => $"Imported {imported} existing assignments.",
+            0 => LocalizationManager.Translate("Import.NothingFound"),
+            1 => LocalizationManager.Translate("Import.OneImported"),
+            _ => LocalizationManager.Translate("Import.ManyImported", imported),
         };
     }
 
@@ -206,7 +209,7 @@ public sealed class RuleListViewModel : ObservableObject
         var trackName = rule.TrackName.Trim();
         if (executableName.Length == 0 || trackName.Length == 0)
         {
-            ValidationError = "The executable and the track are both required.";
+            ValidationError = LocalizationManager.Translate("Validation.RequiredFields");
             return;
         }
 
@@ -216,8 +219,8 @@ public sealed class RuleListViewModel : ObservableObject
         if (conflict is not null)
         {
             var overwrite = MessageBox.Show(
-                $"A rule for \"{executableName}\" already exists. Overwrite it?",
-                "Duplicate rule",
+                LocalizationManager.Translate("Rule.DuplicateMessage", executableName),
+                LocalizationManager.Translate("Rule.DuplicateTitle"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 

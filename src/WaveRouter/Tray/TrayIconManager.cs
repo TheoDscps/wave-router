@@ -1,5 +1,6 @@
 using System.Windows.Forms;
-using WaveRouter.Audio;
+using WaveRouter.Infrastructure.Audio;
+using WaveRouter.Routing;
 using WaveRouter.ViewModels;
 
 namespace WaveRouter.Tray;
@@ -12,13 +13,15 @@ public sealed class TrayIconManager : IDisposable
 {
     private readonly RuleListViewModel _ruleListViewModel;
     private readonly NotifyIcon _icon;
-    private readonly AudioSessionWatcher _watcher = new();
+    private readonly RuleMatchCoordinator _matchCoordinator;
     private MainWindow? _mainWindow;
     private StyleGuideWindow? _styleGuideWindow;
 
     public TrayIconManager(RuleListViewModel ruleListViewModel)
     {
         _ruleListViewModel = ruleListViewModel;
+        _matchCoordinator = new RuleMatchCoordinator(new AudioSessionWatcher(), ruleListViewModel);
+
         var menu = new ContextMenuStrip();
         menu.Items.Add("Ouvrir les règles", null, (_, _) => ShowMainWindow());
         menu.Items.Add("Style guide", null, (_, _) => ShowStyleGuide());
@@ -37,8 +40,8 @@ public sealed class TrayIconManager : IDisposable
 
     public void Start()
     {
-        _watcher.NewSessionDetected += OnNewSessionDetected;
-        _watcher.Start();
+        _matchCoordinator.SessionEvaluated += OnSessionEvaluated;
+        _matchCoordinator.Start();
     }
 
     private void ShowMainWindow()
@@ -55,18 +58,28 @@ public sealed class TrayIconManager : IDisposable
         _styleGuideWindow.Activate();
     }
 
-    private void OnNewSessionDetected(object? sender, AudioSessionInfo session)
+    private void OnSessionEvaluated(object? sender, RuleMatchResult result)
     {
-        // Placeholder: routing rule matching lands with the rule engine (see docs/use-cases/automatic-routing-enforcement.md).
-        _icon.BalloonTipTitle = "Nouvelle source audio";
-        _icon.BalloonTipText = $"{session.DisplayName} ({session.ProcessName})";
+        // Matching only, for now — actually switching the app's audio output lands with the
+        // Windows per-app routing implementation (see docs/use-cases/automatic-routing-enforcement.md).
+        if (result.MatchedRule is { } rule)
+        {
+            _icon.BalloonTipTitle = "Règle trouvée";
+            _icon.BalloonTipText = $"{result.Session.DisplayName} → {rule.TrackName} (routage automatique à venir)";
+        }
+        else
+        {
+            _icon.BalloonTipTitle = "Nouvelle source audio";
+            _icon.BalloonTipText = $"{result.Session.DisplayName} ({result.Session.ProcessName}) — aucune règle";
+        }
+
         _icon.ShowBalloonTip(3000);
     }
 
     public void Dispose()
     {
-        _watcher.NewSessionDetected -= OnNewSessionDetected;
-        _watcher.Dispose();
+        _matchCoordinator.SessionEvaluated -= OnSessionEvaluated;
+        _matchCoordinator.Dispose();
         _icon.Visible = false;
         _icon.Dispose();
     }

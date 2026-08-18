@@ -4,8 +4,8 @@ Living document — update after each completed task or scope change.
 
 ## MVP
 
-- [ ] Automatic detection of new audio sessions (new app producing sound) — [use case](docs/use-cases/audio-session-detection.md)
-- [ ] Rule engine: `executable → Wave Link track` matching — [use case](docs/use-cases/automatic-routing-enforcement.md)
+- [x] Automatic detection of new audio sessions (new app producing sound) — [use case](docs/use-cases/audio-session-detection.md)
+- [x] Rule engine: `executable → Wave Link track` matching — [use case](docs/use-cases/automatic-routing-enforcement.md)
 - [ ] Automatic routing enforcement (switch the app's audio output to the matched track) — [use case](docs/use-cases/automatic-routing-enforcement.md)
 - [x] Simple UI to manage rules (add / edit / delete an app ↔ track association) — [use case](docs/use-cases/rule-management.md)
 - [x] Local rule persistence (JSON file) — [use case](docs/use-cases/rule-persistence.md)

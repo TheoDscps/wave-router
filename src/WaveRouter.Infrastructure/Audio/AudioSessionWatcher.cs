@@ -1,13 +1,15 @@
 using NAudio.CoreAudioApi;
 using NAudio.CoreAudioApi.Interfaces;
+using WaveRouter.Core.Abstractions;
+using WaveRouter.Core.Models;
 
-namespace WaveRouter.Audio;
+namespace WaveRouter.Infrastructure.Audio;
 
 /// <summary>
 /// Watches the default render device for newly created audio sessions (i.e. an app that just
 /// started playing audio) and raises <see cref="NewSessionDetected"/> for each one.
 /// </summary>
-public sealed class AudioSessionWatcher : IDisposable
+public sealed class AudioSessionWatcher : IAudioSessionWatcher
 {
     private readonly MMDeviceEnumerator _enumerator = new();
     private MMDevice? _device;

@@ -39,6 +39,9 @@
                     MinWidth="100" />
         </StackPanel>
 
+        <CheckBox Content="{loc:Translate Settings.StartWithWindows}" IsChecked="{Binding StartWithWindows}"
+                  Margin="0,0,0,20" />
+
         <Button Content="{loc:Translate Settings.Close}" Style="{StaticResource AccentButton}"
                 Click="OnCloseClicked" HorizontalAlignment="Left" MinWidth="100" />
 

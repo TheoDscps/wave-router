@@ -13,7 +13,7 @@ Living document — update after each completed task or scope change.
 
 ## v1
 
-- [ ] Auto-start with Windows — [use case](docs/use-cases/windows-autostart.md)
+- [x] Auto-start with Windows (per-user registry Run key, no admin rights needed) — [use case](docs/use-cases/windows-autostart.md)
 - [x] Dynamic reading of Wave Link's available tracks (via device enumeration, not Wave Link's config file — see CLAUDE.md) — [use case](docs/use-cases/read-wave-link-tracks.md)
 - [x] Popup prompting the user to route an app the first time it's seen unconfigured, with a persisted "ignore this app" choice — not originally in the use case docs, added based on user feedback; covers most of what routing-notifications.md's "notify on routing" describes too
 - [x] Live sync from Wave Link's own Automixer (`WaveLinkSyncCoordinator` watches its config file, silently imports new app↔track assignments as Wave Link learns them) + a manual "import existing assignments" button merging that with Windows' per-app setting for currently-running apps — not originally in the use case docs, added based on user feedback

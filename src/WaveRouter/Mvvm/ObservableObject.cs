@@ -18,4 +18,9 @@ public abstract class ObservableObject : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         return true;
     }
+
+    /// <summary>For the rare case a bound value must be re-announced without changing (e.g. a two-way
+    /// binding needs to snap back to the current value after a rejected change).</summary>
+    protected void RaisePropertyChanged([CallerMemberName] string? propertyName = null) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }

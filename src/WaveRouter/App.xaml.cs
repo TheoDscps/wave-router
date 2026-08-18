@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WaveRouter.Core.Abstractions;
 using WaveRouter.Infrastructure.Audio;
 using WaveRouter.Infrastructure.Persistence;
+using WaveRouter.Infrastructure.Startup;
 using WaveRouter.Localization;
 using WaveRouter.Themes;
 using WaveRouter.Tray;
@@ -43,6 +44,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IRuleRepository, JsonRuleRepository>();
         services.AddSingleton<ITrackProvider, WaveLinkTrackProvider>();
         services.AddSingleton<IAppSettingsRepository, JsonAppSettingsRepository>();
+        services.AddSingleton<IStartupRegistration, WindowsStartupRegistration>();
         // One shared instance backs both IAudioRouter and IExistingRoutingScanner — no reason to activate
         // the underlying WinRT factory (see PolicyConfigAudioRouter) twice.
         services.AddSingleton<PolicyConfigAudioRouter>();
@@ -52,10 +54,11 @@ public partial class App : System.Windows.Application
         _services = services.BuildServiceProvider();
 
         var settingsRepository = _services.GetRequiredService<IAppSettingsRepository>();
+        var startupRegistration = _services.GetRequiredService<IStartupRegistration>();
         var appSettings = await settingsRepository.LoadAsync();
         ThemeManager.Apply(appSettings.Theme == nameof(AppTheme.Light) ? AppTheme.Light : AppTheme.Dark);
         LocalizationManager.SetLanguage(appSettings.Language);
-        var settingsViewModel = new SettingsViewModel(settingsRepository, appSettings);
+        var settingsViewModel = new SettingsViewModel(settingsRepository, startupRegistration, appSettings);
 
         var repository = _services.GetRequiredService<IRuleRepository>();
         var trackProvider = _services.GetRequiredService<ITrackProvider>();

@@ -6,6 +6,13 @@ A small Windows tray app that automatically routes a newly launched app's audio 
 correct [Elgato Wave Link](https://www.elgato.com/wave-link) track — no more opening Wave Link and
 reassigning the source by hand every time a game or app starts making noise.
 
+## Download
+
+Grab the latest `.zip` from the [Releases page](../../releases/latest), extract it anywhere, and
+run `WaveRouter.exe`. It's self-contained — no .NET install required. Windows SmartScreen may warn
+about the exe being unsigned (no code-signing certificate for this hobby project) — "More info" →
+"Run anyway".
+
 ## How it works
 
 WaveRouter watches for new Windows audio sessions in the background. When one starts and you've
@@ -29,8 +36,9 @@ See [`docs/use-cases/`](docs/use-cases/) for the detailed behavior of each featu
 ## Requirements
 
 - Windows 10/11
-- [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0)
 - [Elgato Wave Link](https://www.elgato.com/wave-link) (for the virtual audio tracks to route to)
+- The [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) — only if building from
+  source; the packaged release above needs nothing extra.
 
 ## Building from source
 

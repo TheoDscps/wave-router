@@ -153,6 +153,28 @@ public sealed class RuleListViewModel : ObservableObject
         };
     }
 
+    /// <summary>Called automatically whenever Wave Link's own config file changes (see
+    /// <see cref="Routing.WaveLinkSyncCoordinator"/>) — silently syncs any new assignments, no prompt:
+    /// the user already made this choice inside Wave Link itself. Only reads the Wave Link config (not
+    /// the Windows-level process scan <see cref="ImportExistingAssignmentsAsync"/> also does) — that
+    /// scan is comparatively expensive and this can fire on every edit made in Wave Link's UI.</summary>
+    public async Task SyncFromWaveLinkAsync()
+    {
+        var imported = 0;
+        foreach (var known in _mixerConfigReader.ReadKnownAssignments())
+        {
+            if (TryImportRule(known.ExecutableName, known.TrackName))
+            {
+                imported++;
+            }
+        }
+
+        if (imported > 0)
+        {
+            await PersistAsync();
+        }
+    }
+
     /// <summary>Adds a rule for <paramref name="executableName"/> if nothing already covers it (an
     /// existing rule, or one added earlier in the same import pass). Returns whether it was added.</summary>
     private bool TryImportRule(string executableName, string trackName)

@@ -16,6 +16,7 @@ public sealed class TrayIconManager : IDisposable
     private readonly NotifyIcon _icon;
     private readonly RuleMatchCoordinator _matchCoordinator;
     private readonly NewAppPromptCoordinator _promptCoordinator;
+    private readonly WaveLinkSyncCoordinator _syncCoordinator;
     private MainWindow? _mainWindow;
     private StyleGuideWindow? _styleGuideWindow;
 
@@ -24,6 +25,7 @@ public sealed class TrayIconManager : IDisposable
         _ruleListViewModel = ruleListViewModel;
         _matchCoordinator = new RuleMatchCoordinator(new AudioSessionWatcher(), router, ruleListViewModel);
         _promptCoordinator = new NewAppPromptCoordinator(_matchCoordinator, router, ruleListViewModel);
+        _syncCoordinator = new WaveLinkSyncCoordinator(ruleListViewModel);
 
         var menu = new ContextMenuStrip();
         menu.Items.Add("Ouvrir les règles", null, (_, _) => ShowMainWindow());
@@ -96,6 +98,7 @@ public sealed class TrayIconManager : IDisposable
     {
         _matchCoordinator.SessionEvaluated -= OnSessionEvaluated;
         _promptCoordinator.RoutingApplied -= OnSessionEvaluated;
+        _syncCoordinator.Dispose();
         _promptCoordinator.Dispose();
         _matchCoordinator.Dispose();
         _icon.Visible = false;

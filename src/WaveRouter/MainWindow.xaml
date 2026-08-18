@@ -1,0 +1,33 @@
+<Window x:Class="WaveRouter.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WaveRouter"
+        Width="640" Height="420" MinWidth="360" MinHeight="280">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Rule list sidebar -->
+        <Border Grid.Column="0" Background="{DynamicResource BgSurfaceBrush}"
+                BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,1,0">
+            <DockPanel Margin="{StaticResource PaddingCard}">
+                <TextBlock DockPanel.Dock="Top" Text="Règles" Style="{StaticResource Heading}"
+                           Margin="0,0,0,16" />
+                <Button DockPanel.Dock="Bottom" Content="+ Ajouter une règle" Style="{StaticResource AccentButton}"
+                        HorizontalAlignment="Stretch" />
+                <TextBlock DockPanel.Dock="Top" Text="Aucune règle pour le moment."
+                           Style="{StaticResource TextSecondary}" TextWrapping="Wrap" />
+            </DockPanel>
+        </Border>
+
+        <!-- Detail / empty state -->
+        <Grid Grid.Column="1" Background="{DynamicResource BgBaseBrush}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="320">
+                <TextBlock Text="Sélectionne une règle, ou ajoutes-en une nouvelle."
+                           Style="{StaticResource TextSecondary}" TextAlignment="Center" TextWrapping="Wrap" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

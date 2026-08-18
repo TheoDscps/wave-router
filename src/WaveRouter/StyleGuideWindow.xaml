@@ -1,0 +1,83 @@
+<Window x:Class="WaveRouter.StyleGuideWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WaveRouter — Style Guide"
+        Width="720" Height="640">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="{StaticResource PaddingCard}">
+
+            <TextBlock Text="Palette" Style="{StaticResource Heading}" Margin="0,0,0,8" />
+            <WrapPanel Margin="0,0,0,24">
+                <StackPanel Margin="0,0,12,12" Width="120">
+                    <Border Height="48" CornerRadius="{StaticResource RadiusSm}" Background="{DynamicResource BgBaseBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" />
+                    <TextBlock Text="BgBase" Style="{StaticResource TextSecondary}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,12,12" Width="120">
+                    <Border Height="48" CornerRadius="{StaticResource RadiusSm}" Background="{DynamicResource BgSurfaceBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" />
+                    <TextBlock Text="BgSurface" Style="{StaticResource TextSecondary}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,12,12" Width="120">
+                    <Border Height="48" CornerRadius="{StaticResource RadiusSm}" Background="{DynamicResource BgSurfaceElevatedBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" />
+                    <TextBlock Text="BgSurfaceElevated" Style="{StaticResource TextSecondary}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,12,12" Width="120">
+                    <Border Height="48" CornerRadius="{StaticResource RadiusSm}" Background="{DynamicResource AccentBrush}" />
+                    <TextBlock Text="Accent" Style="{StaticResource TextSecondary}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,12,12" Width="120">
+                    <Border Height="48" CornerRadius="{StaticResource RadiusSm}" Background="{DynamicResource SuccessBrush}" />
+                    <TextBlock Text="Success" Style="{StaticResource TextSecondary}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,12,12" Width="120">
+                    <Border Height="48" CornerRadius="{StaticResource RadiusSm}" Background="{DynamicResource WarningBrush}" />
+                    <TextBlock Text="Warning" Style="{StaticResource TextSecondary}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,12,12" Width="120">
+                    <Border Height="48" CornerRadius="{StaticResource RadiusSm}" Background="{DynamicResource ErrorBrush}" />
+                    <TextBlock Text="Error" Style="{StaticResource TextSecondary}" />
+                </StackPanel>
+            </WrapPanel>
+
+            <TextBlock Text="Typography" Style="{StaticResource Heading}" Margin="0,0,0,8" />
+            <StackPanel Margin="0,0,0,24">
+                <TextBlock Text="Heading — 3xl / SemiBold" FontSize="{StaticResource FontSize3xl}" FontWeight="{StaticResource FontWeightSemiBold}" />
+                <TextBlock Text="Heading — xl / SemiBold" Style="{StaticResource Heading}" />
+                <TextBlock Text="Body — base 14px Regular" FontSize="{StaticResource FontSizeBase}" />
+                <TextBlock Text="Secondary — sm 13px" Style="{StaticResource TextSecondary}" />
+                <TextBlock Text="valorant.exe → Local Input 3" Style="{StaticResource MonoText}" />
+            </StackPanel>
+
+            <TextBlock Text="Spacing (4px grid)" Style="{StaticResource Heading}" Margin="0,0,0,8" />
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+                <Rectangle Width="{StaticResource Space1}" Height="24" Fill="{DynamicResource AccentBrush}" Margin="0,0,4,0" />
+                <Rectangle Width="{StaticResource Space2}" Height="24" Fill="{DynamicResource AccentBrush}" Margin="0,0,4,0" />
+                <Rectangle Width="{StaticResource Space3}" Height="24" Fill="{DynamicResource AccentBrush}" Margin="0,0,4,0" />
+                <Rectangle Width="{StaticResource Space4}" Height="24" Fill="{DynamicResource AccentBrush}" Margin="0,0,4,0" />
+                <Rectangle Width="{StaticResource Space6}" Height="24" Fill="{DynamicResource AccentBrush}" Margin="0,0,4,0" />
+                <Rectangle Width="{StaticResource Space8}" Height="24" Fill="{DynamicResource AccentBrush}" />
+            </StackPanel>
+
+            <TextBlock Text="Shadows" Style="{StaticResource Heading}" Margin="0,0,0,8" />
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+                <Border Width="100" Height="60" Margin="0,0,24,0" Background="{DynamicResource BgSurfaceBrush}" CornerRadius="{StaticResource RadiusMd}" Effect="{StaticResource ShadowSm}" />
+                <Border Width="100" Height="60" Margin="0,0,24,0" Background="{DynamicResource BgSurfaceBrush}" CornerRadius="{StaticResource RadiusMd}" Effect="{StaticResource ShadowMd}" />
+                <Border Width="100" Height="60" Background="{DynamicResource BgSurfaceBrush}" CornerRadius="{StaticResource RadiusMd}" Effect="{StaticResource ShadowLg}" />
+            </StackPanel>
+
+            <TextBlock Text="Components" Style="{StaticResource Heading}" Margin="0,0,0,8" />
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                <Button Content="Default" Margin="0,0,12,0" />
+                <Button Content="Accent" Style="{StaticResource AccentButton}" Margin="0,0,12,0" />
+                <Button Content="Disabled" IsEnabled="False" />
+            </StackPanel>
+            <TextBox Width="240" Text="discord.exe" HorizontalAlignment="Left" Margin="0,0,0,16" />
+            <Border Style="{StaticResource Card}" Width="320" HorizontalAlignment="Left">
+                <StackPanel>
+                    <TextBlock Text="Discord" FontWeight="{StaticResource FontWeightSemiBold}" />
+                    <TextBlock Text="discord.exe → Local Input 2" Style="{StaticResource MonoText}" />
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</Window>

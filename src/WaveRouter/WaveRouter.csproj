@@ -4,11 +4,14 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <!-- WinForms is kept solely for System.Windows.Forms.NotifyIcon — WPF has no native tray icon API. -->
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <ApplicationVisualStyles>true</ApplicationVisualStyles>
-    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- InvariantGlobalization is incompatible with WPF's text layout engine (it needs real culture data
+         for font shaping) — removed now that the app renders WPF text, not just WinForms menus. -->
   </PropertyGroup>
 
   <ItemGroup>

@@ -9,7 +9,7 @@ Living document — update after each completed task or scope change.
 - [x] Automatic routing enforcement (switch the app's audio output to the matched track) — [use case](docs/use-cases/automatic-routing-enforcement.md)
 - [x] Simple UI to manage rules (add / edit / delete an app ↔ track association) — [use case](docs/use-cases/rule-management.md)
 - [x] Local rule persistence (JSON file) — [use case](docs/use-cases/rule-persistence.md)
-- [ ] Background execution via system tray icon — [use case](docs/use-cases/background-tray-execution.md)
+- [x] Background execution via system tray icon — [use case](docs/use-cases/background-tray-execution.md)
 
 ## v1
 

@@ -44,11 +44,18 @@ public sealed class TrayIconManager : IDisposable
         _matchCoordinator.Start();
     }
 
-    private void ShowMainWindow()
+    /// <summary>Also called when another launched instance asks to be shown instead — see <see cref="SingleInstanceGuard"/>.</summary>
+    public void ShowMainWindow()
     {
         _mainWindow ??= new MainWindow(_ruleListViewModel);
         _mainWindow.Show();
+        _mainWindow.WindowState = System.Windows.WindowState.Normal;
+
+        // Activate() alone doesn't reliably steal focus when the request came from another process
+        // (e.g. a second launch) — the classic fix is to force-then-release topmost.
+        _mainWindow.Topmost = true;
         _mainWindow.Activate();
+        _mainWindow.Topmost = false;
     }
 
     private void ShowStyleGuide()

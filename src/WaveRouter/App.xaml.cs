@@ -11,10 +11,19 @@ public partial class App : System.Windows.Application
 {
     private ServiceProvider? _services;
     private TrayIconManager? _tray;
+    private SingleInstanceGuard? _instanceGuard;
 
     protected override async void OnStartup(System.Windows.StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        _instanceGuard = new SingleInstanceGuard();
+        if (!_instanceGuard.IsFirstInstance)
+        {
+            _instanceGuard.SignalExistingInstance();
+            Shutdown(); // triggers OnExit, which disposes _instanceGuard
+            return;
+        }
 
         ThemeManager.Apply(AppTheme.Dark);
 
@@ -28,12 +37,14 @@ public partial class App : System.Windows.Application
 
         _tray = new TrayIconManager(ruleListViewModel);
         _tray.Start();
+        _instanceGuard.ListenForActivationRequests(() => _tray.ShowMainWindow());
     }
 
     protected override void OnExit(System.Windows.ExitEventArgs e)
     {
         _tray?.Dispose();
         _services?.Dispose();
+        _instanceGuard?.Dispose();
         base.OnExit(e);
     }
 }

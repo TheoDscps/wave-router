@@ -4,4 +4,7 @@
     <Project Path="src/WaveRouter.Core/WaveRouter.Core.csproj" />
     <Project Path="src/WaveRouter.Infrastructure/WaveRouter.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/WaveRouter.Core.Tests/WaveRouter.Core.Tests.csproj" />
+  </Folder>
 </Solution>

@@ -1,5 +1,7 @@
 # WaveRouter
 
+[![Build](https://github.com/TheoDscps/wave-router/actions/workflows/build.yml/badge.svg)](https://github.com/TheoDscps/wave-router/actions/workflows/build.yml)
+
 A small Windows tray app that automatically routes a newly launched app's audio output to the
 correct [Elgato Wave Link](https://www.elgato.com/wave-link) track — no more opening Wave Link and
 reassigning the source by hand every time a game or app starts making noise.

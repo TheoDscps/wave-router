@@ -6,6 +6,8 @@ A small Windows tray app that automatically routes a newly launched app's audio 
 correct [Elgato Wave Link](https://www.elgato.com/wave-link) track — no more opening Wave Link and
 reassigning the source by hand every time a game or app starts making noise.
 
+![WaveRouter rule list, grouped by Wave Link track](docs/images/screenshot.png)
+
 ## Download
 
 Grab the latest `.zip` from the [Releases page](../../releases/latest), extract it anywhere, and
@@ -69,7 +71,8 @@ src/
 ## Status
 
 Solo hobby project, built to solve a personal annoyance. No warranty, no support commitment —
-issues and PRs are welcome but there's no dedicated support channel.
+issues and PRs are welcome but there's no dedicated support channel. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for how to set up a dev environment and the PR workflow.
 
 ## License
 

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using WaveRouter.Core.Abstractions;
+using WaveRouter.Core.History;
 using WaveRouter.Infrastructure.Audio;
 using WaveRouter.Infrastructure.Persistence;
 using WaveRouter.Infrastructure.Startup;
@@ -51,6 +52,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IAudioRouter>(sp => sp.GetRequiredService<PolicyConfigAudioRouter>());
         services.AddSingleton<IExistingRoutingScanner>(sp => sp.GetRequiredService<PolicyConfigAudioRouter>());
         services.AddSingleton<IWaveLinkMixerConfigReader, WaveLinkMixerConfigReader>();
+        services.AddSingleton<RoutingHistory>();
         _services = services.BuildServiceProvider();
 
         var settingsRepository = _services.GetRequiredService<IAppSettingsRepository>();
@@ -68,7 +70,10 @@ public partial class App : System.Windows.Application
         var initialLoad = await repository.LoadAsync();
         var ruleListViewModel = new RuleListViewModel(repository, trackProvider, routingScanner, mixerConfigReader, initialLoad);
 
-        _tray = new TrayIconManager(ruleListViewModel, settingsViewModel, router);
+        var routingHistory = _services.GetRequiredService<RoutingHistory>();
+        var historyViewModel = new HistoryViewModel(routingHistory);
+
+        _tray = new TrayIconManager(ruleListViewModel, settingsViewModel, historyViewModel, routingHistory, router);
         _tray.Start();
         _instanceGuard.ListenForActivationRequests(() => _tray.ShowMainWindow());
     }

@@ -1,0 +1,73 @@
+<Window x:Class="WaveRouter.HistoryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:WaveRouter.Localization"
+        xmlns:conv="clr-namespace:WaveRouter.Converters"
+        Title="{loc:Translate History.Title}"
+        Width="420" Height="480" MinWidth="360" MinHeight="300"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BgBaseBrush}">
+    <Window.Resources>
+        <conv:NullToVisibilityConverter x:Key="NullToVisibility" />
+    </Window.Resources>
+    <DockPanel Margin="{StaticResource PaddingCard}">
+
+        <TextBlock DockPanel.Dock="Top" Text="{loc:Translate History.Title}" Style="{StaticResource Heading}"
+                   Margin="0,0,0,16" />
+
+        <TextBlock DockPanel.Dock="Top" Text="{loc:Translate History.Empty}"
+                   TextWrapping="Wrap" Margin="0,0,0,8">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource TextSecondary}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Entries.Count}" Value="0">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <ListBox ItemsSource="{Binding Entries}" Background="Transparent" BorderThickness="0"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Rectangle Grid.Column="0" Width="8" Height="8" RadiusX="4" RadiusY="4"
+                                   Margin="0,4,10,0" VerticalAlignment="Top">
+                            <Rectangle.Style>
+                                <Style TargetType="Rectangle">
+                                    <Setter Property="Fill" Value="{DynamicResource SuccessBrush}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Success}" Value="False">
+                                            <Setter Property="Fill" Value="{DynamicResource ErrorBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Rectangle.Style>
+                        </Rectangle>
+
+                        <StackPanel Grid.Column="1">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Timestamp, StringFormat='HH:mm:ss'}" Style="{StaticResource MonoText}" Margin="0,0,8,0" />
+                                <TextBlock Text="{Binding DisplayName}" />
+                                <TextBlock Text=" &#8594; " />
+                                <TextBlock Text="{Binding TrackName}" FontWeight="{StaticResource FontWeightSemiBold}" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding ErrorMessage}" Style="{StaticResource TextSecondary}"
+                                       Foreground="{DynamicResource ErrorBrush}" TextWrapping="Wrap"
+                                       Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibility}}" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+    </DockPanel>
+</Window>

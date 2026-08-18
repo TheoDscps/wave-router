@@ -25,6 +25,7 @@ internal static class AppStrings
         ["NewAppPrompt.Ignore"] = "Ignorer",
 
         ["Tray.OpenRules"] = "Ouvrir les règles",
+        ["Tray.History"] = "Historique",
         ["Tray.Settings"] = "Réglages",
         ["Tray.Quit"] = "Quitter",
         ["Tray.RoutingDoneTitle"] = "Routage effectué",
@@ -50,6 +51,9 @@ internal static class AppStrings
         ["Settings.StartWithWindowsFailedTitle"] = "Échec",
         ["Settings.StartWithWindowsFailedMessage"] = "Impossible de modifier le démarrage automatique avec Windows.",
         ["Settings.Close"] = "Fermer",
+
+        ["History.Title"] = "Historique",
+        ["History.Empty"] = "Aucun routage pour le moment.",
     };
 
     public static readonly Dictionary<string, string> English = new()
@@ -73,6 +77,7 @@ internal static class AppStrings
         ["NewAppPrompt.Ignore"] = "Ignore",
 
         ["Tray.OpenRules"] = "Open rules",
+        ["Tray.History"] = "History",
         ["Tray.Settings"] = "Settings",
         ["Tray.Quit"] = "Quit",
         ["Tray.RoutingDoneTitle"] = "Routing applied",
@@ -98,5 +103,8 @@ internal static class AppStrings
         ["Settings.StartWithWindowsFailedTitle"] = "Failed",
         ["Settings.StartWithWindowsFailedMessage"] = "Could not update the Windows startup setting.",
         ["Settings.Close"] = "Close",
+
+        ["History.Title"] = "History",
+        ["History.Empty"] = "No routing yet.",
     };
 }

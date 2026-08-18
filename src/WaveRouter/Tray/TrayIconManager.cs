@@ -1,5 +1,7 @@
 using System.Windows.Forms;
 using WaveRouter.Core.Abstractions;
+using WaveRouter.Core.History;
+using WaveRouter.Core.Models;
 using WaveRouter.Infrastructure.Audio;
 using WaveRouter.Localization;
 using WaveRouter.Routing;
@@ -15,8 +17,11 @@ public sealed class TrayIconManager : IDisposable
 {
     private readonly RuleListViewModel _ruleListViewModel;
     private readonly SettingsViewModel _settingsViewModel;
+    private readonly HistoryViewModel _historyViewModel;
+    private readonly RoutingHistory _routingHistory;
     private readonly NotifyIcon _icon;
     private readonly ToolStripMenuItem _openRulesItem;
+    private readonly ToolStripMenuItem _historyItem;
     private readonly ToolStripMenuItem _settingsItem;
     private readonly ToolStripMenuItem _quitItem;
     private readonly RuleMatchCoordinator _matchCoordinator;
@@ -25,20 +30,25 @@ public sealed class TrayIconManager : IDisposable
     private MainWindow? _mainWindow;
     private StyleGuideWindow? _styleGuideWindow;
     private SettingsWindow? _settingsWindow;
+    private HistoryWindow? _historyWindow;
 
-    public TrayIconManager(RuleListViewModel ruleListViewModel, SettingsViewModel settingsViewModel, IAudioRouter router)
+    public TrayIconManager(RuleListViewModel ruleListViewModel, SettingsViewModel settingsViewModel, HistoryViewModel historyViewModel, RoutingHistory routingHistory, IAudioRouter router)
     {
         _ruleListViewModel = ruleListViewModel;
         _settingsViewModel = settingsViewModel;
+        _historyViewModel = historyViewModel;
+        _routingHistory = routingHistory;
         _matchCoordinator = new RuleMatchCoordinator(new AudioSessionWatcher(), router, ruleListViewModel);
         _promptCoordinator = new NewAppPromptCoordinator(_matchCoordinator, router, ruleListViewModel);
         _syncCoordinator = new WaveLinkSyncCoordinator(ruleListViewModel);
 
         var menu = new ContextMenuStrip();
         _openRulesItem = new ToolStripMenuItem(LocalizationManager.Translate("Tray.OpenRules"), null, (_, _) => ShowMainWindow());
+        _historyItem = new ToolStripMenuItem(LocalizationManager.Translate("Tray.History"), null, (_, _) => ShowHistoryWindow());
         _settingsItem = new ToolStripMenuItem(LocalizationManager.Translate("Tray.Settings"), null, (_, _) => ShowSettingsWindow());
         _quitItem = new ToolStripMenuItem(LocalizationManager.Translate("Tray.Quit"), null, (_, _) => System.Windows.Application.Current.Shutdown());
         menu.Items.Add(_openRulesItem);
+        menu.Items.Add(_historyItem);
         menu.Items.Add(_settingsItem);
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(_quitItem);
@@ -92,9 +102,17 @@ public sealed class TrayIconManager : IDisposable
         _settingsWindow.Activate();
     }
 
+    private void ShowHistoryWindow()
+    {
+        _historyWindow ??= new HistoryWindow(_historyViewModel);
+        _historyWindow.Show();
+        _historyWindow.Activate();
+    }
+
     private void OnLanguageChanged(object? sender, EventArgs e)
     {
         _openRulesItem.Text = LocalizationManager.Translate("Tray.OpenRules");
+        _historyItem.Text = LocalizationManager.Translate("Tray.History");
         _settingsItem.Text = LocalizationManager.Translate("Tray.Settings");
         _quitItem.Text = LocalizationManager.Translate("Tray.Quit");
     }
@@ -106,7 +124,11 @@ public sealed class TrayIconManager : IDisposable
             return;
         }
 
-        if (result.Routing is { Success: true })
+        var success = result.Routing is { Success: true };
+        _routingHistory.Record(new RoutingHistoryEntry(
+            DateTime.Now, result.Session.DisplayName, result.Session.ProcessName, rule.TrackName, success, result.Routing?.ErrorMessage));
+
+        if (success)
         {
             _icon.BalloonTipTitle = LocalizationManager.Translate("Tray.RoutingDoneTitle");
             _icon.BalloonTipText = $"{result.Session.DisplayName} → {rule.TrackName}";

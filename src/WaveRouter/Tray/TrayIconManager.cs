@@ -20,7 +20,7 @@ public sealed class TrayIconManager : IDisposable
     public TrayIconManager(RuleListViewModel ruleListViewModel)
     {
         _ruleListViewModel = ruleListViewModel;
-        _matchCoordinator = new RuleMatchCoordinator(new AudioSessionWatcher(), ruleListViewModel);
+        _matchCoordinator = new RuleMatchCoordinator(new AudioSessionWatcher(), new PolicyConfigAudioRouter(), ruleListViewModel);
 
         var menu = new ContextMenuStrip();
         menu.Items.Add("Ouvrir les règles", null, (_, _) => ShowMainWindow());
@@ -60,17 +60,23 @@ public sealed class TrayIconManager : IDisposable
 
     private void OnSessionEvaluated(object? sender, RuleMatchResult result)
     {
-        // Matching only, for now — actually switching the app's audio output lands with the
-        // Windows per-app routing implementation (see docs/use-cases/automatic-routing-enforcement.md).
-        if (result.MatchedRule is { } rule)
-        {
-            _icon.BalloonTipTitle = "Règle trouvée";
-            _icon.BalloonTipText = $"{result.Session.DisplayName} → {rule.TrackName} (routage automatique à venir)";
-        }
-        else
+        if (result.MatchedRule is not { } rule)
         {
             _icon.BalloonTipTitle = "Nouvelle source audio";
             _icon.BalloonTipText = $"{result.Session.DisplayName} ({result.Session.ProcessName}) — aucune règle";
+            _icon.BalloonTipIcon = ToolTipIcon.None;
+        }
+        else if (result.Routing is { Success: true })
+        {
+            _icon.BalloonTipTitle = "Routage effectué";
+            _icon.BalloonTipText = $"{result.Session.DisplayName} → {rule.TrackName}";
+            _icon.BalloonTipIcon = ToolTipIcon.Info;
+        }
+        else
+        {
+            _icon.BalloonTipTitle = "Échec du routage";
+            _icon.BalloonTipText = $"{result.Session.DisplayName} → {rule.TrackName} : {result.Routing?.ErrorMessage}";
+            _icon.BalloonTipIcon = ToolTipIcon.Warning;
         }
 
         _icon.ShowBalloonTip(3000);

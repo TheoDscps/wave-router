@@ -18,6 +18,18 @@ public partial class App : System.Windows.Application
     {
         base.OnStartup(e);
 
+        // Fire-and-forget async command handlers (RelayCommand) can't propagate exceptions to their
+        // caller — without this, a failure deep in an async chain (e.g. a save) fails completely silently.
+        DispatcherUnhandledException += (_, args) =>
+        {
+            System.Windows.MessageBox.Show(
+                args.Exception.ToString(),
+                "WaveRouter — unexpected error",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error);
+            args.Handled = true;
+        };
+
         _instanceGuard = new SingleInstanceGuard();
         if (!_instanceGuard.IsFirstInstance)
         {

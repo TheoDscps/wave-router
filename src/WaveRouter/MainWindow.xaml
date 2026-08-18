@@ -2,12 +2,29 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:conv="clr-namespace:WaveRouter.Converters"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         Title="WaveRouter"
         Width="760" Height="500" MinWidth="480" MinHeight="360"
         Background="{DynamicResource BgBaseBrush}">
 
     <Window.Resources>
         <conv:NullToVisibilityConverter x:Key="NullToVisibility" />
+
+        <!-- Groups the rule list by track (e.g. "Game", "Music") instead of a flat app list — live so
+             typing a new track name for a rule moves it into the right group immediately. -->
+        <CollectionViewSource x:Key="RulesByTrack" Source="{Binding Rules}" IsLiveGroupingRequested="True">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="TrackName" />
+            </CollectionViewSource.GroupDescriptions>
+            <CollectionViewSource.LiveGroupingProperties>
+                <sys:String>TrackName</sys:String>
+            </CollectionViewSource.LiveGroupingProperties>
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="TrackName" />
+                <scm:SortDescription PropertyName="ExecutableName" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
     </Window.Resources>
 
     <DockPanel>
@@ -51,17 +68,26 @@
                         </TextBlock.Style>
                     </TextBlock>
 
-                    <ListBox ItemsSource="{Binding Rules}" SelectedItem="{Binding SelectedRule}"
+                    <ListBox ItemsSource="{Binding Source={StaticResource RulesByTrack}}" SelectedItem="{Binding SelectedRule}"
                              Background="Transparent" BorderThickness="0"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel>
-                                    <TextBlock Text="{Binding ExecutableName}" FontWeight="{StaticResource FontWeightSemiBold}" />
-                                    <TextBlock Text="{Binding TrackName}" Style="{StaticResource MonoText}" />
-                                </StackPanel>
+                                <!-- The track is already the group header above — just the app name here. -->
+                                <TextBlock Text="{Binding ExecutableName}" Style="{StaticResource MonoText}" Foreground="{DynamicResource TextPrimaryBrush}" />
                             </DataTemplate>
                         </ListBox.ItemTemplate>
+                        <ListBox.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" Style="{StaticResource TextSecondary}"
+                                                   FontWeight="{StaticResource FontWeightSemiBold}"
+                                                   Margin="0,12,0,4" />
+                                    </DataTemplate>
+                                </GroupStyle.HeaderTemplate>
+                            </GroupStyle>
+                        </ListBox.GroupStyle>
                     </ListBox>
                 </DockPanel>
             </Border>

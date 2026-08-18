@@ -3,17 +3,17 @@
 [![Build](https://github.com/TheoDscps/wave-router/actions/workflows/build.yml/badge.svg)](https://github.com/TheoDscps/wave-router/actions/workflows/build.yml)
 
 A small Windows tray app that automatically routes a newly launched app's audio output to the
-correct [Elgato Wave Link](https://www.elgato.com/wave-link) track — no more opening Wave Link and
-reassigning the source by hand every time a game or app starts making noise.
+correct [Elgato Wave Link](https://www.elgato.com/wave-link) track, so you don't have to open Wave
+Link and reassign the source by hand every time a game or app starts making noise.
 
 ![WaveRouter rule list, grouped by Wave Link track](docs/images/screenshot.png)
 
 ## Download
 
 Grab the latest `.zip` from the [Releases page](../../releases/latest), extract it anywhere, and
-run `WaveRouter.exe`. It's self-contained — no .NET install required. Windows SmartScreen may warn
-about the exe being unsigned (no code-signing certificate for this hobby project) — "More info" →
-"Run anyway".
+run `WaveRouter.exe`. It's self-contained, so no .NET install is required. Windows SmartScreen may
+warn about the exe being unsigned (no code-signing certificate for this hobby project): click "More
+info", then "Run anyway".
 
 ## How it works
 
@@ -25,7 +25,7 @@ first time it sees an app it doesn't know, it asks once and remembers the choice
   (tray icon → "Open rules").
 - **Automatic detection**: a background watcher picks up new audio sessions as they start.
 - **Automatic routing**: matched sessions are routed via the same (undocumented) mechanism
-  Windows itself uses for *Settings → System → Sound → App volume and device preferences* — no
+  Windows itself uses for *Settings → System → Sound → App volume and device preferences*, with no
   admin rights needed.
 - **Import**: existing app↔track assignments already made inside Wave Link, or directly in
   Windows, can be imported in one click instead of re-creating them by hand.
@@ -39,7 +39,7 @@ See [`docs/use-cases/`](docs/use-cases/) for the detailed behavior of each featu
 
 - Windows 10/11
 - [Elgato Wave Link](https://www.elgato.com/wave-link) (for the virtual audio tracks to route to)
-- The [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) — only if building from
+- The [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0), only if building from
   source; the packaged release above needs nothing extra.
 
 ## Building from source
@@ -54,10 +54,10 @@ Run `src/WaveRouter/bin/Debug/net10.0-windows/WaveRouter.exe`, or `dotnet run --
 
 ## Stack
 
-.NET 10, WPF (MVVM, hand-rolled — no third-party MVVM framework), NAudio for Core Audio session
+.NET 10, WPF (hand-rolled MVVM, no third-party MVVM framework), NAudio for Core Audio session
 detection, and direct P/Invoke into an undocumented WinRT-internal Windows API for per-application
-audio routing (see [Third-Party Notices](THIRD-PARTY-NOTICES.md) — that part is ported from
-[EarTrumpet](https://github.com/File-New-Project/EarTrumpet)).
+audio routing, ported from [EarTrumpet](https://github.com/File-New-Project/EarTrumpet) (see
+[Third-Party Notices](THIRD-PARTY-NOTICES.md)).
 
 ## Project structure
 
@@ -70,10 +70,10 @@ src/
 
 ## Status
 
-Solo hobby project, built to solve a personal annoyance. No warranty, no support commitment —
-issues and PRs are welcome but there's no dedicated support channel. See
+Solo hobby project, built to solve a personal annoyance. No warranty, no support commitment:
+issues and PRs are welcome, but there's no dedicated support channel. See
 [CONTRIBUTING.md](CONTRIBUTING.md) for how to set up a dev environment and the PR workflow.
 
 ## License
 
-[MIT](LICENSE) — see also [Third-Party Notices](THIRD-PARTY-NOTICES.md) for the EarTrumpet-derived code.
+[MIT](LICENSE). See also [Third-Party Notices](THIRD-PARTY-NOTICES.md) for the EarTrumpet-derived code.

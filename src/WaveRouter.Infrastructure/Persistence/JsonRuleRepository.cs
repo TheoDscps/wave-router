@@ -5,13 +5,17 @@ using WaveRouter.Core.Models;
 
 namespace WaveRouter.Infrastructure.Persistence;
 
-/// <summary>Stores rules as JSON under %AppData%/WaveRouter/rules.json. Writes are atomic (temp file + move)
-/// so an unclean shutdown mid-write can't corrupt the store. See docs/use-cases/rule-persistence.md.</summary>
+/// <summary>Stores the rule store as JSON under %AppData%/WaveRouter/rules.json. Writes are atomic (temp
+/// file + move) so an unclean shutdown mid-write can't corrupt the store. See docs/use-cases/rule-persistence.md.</summary>
 public sealed class JsonRuleRepository : IRuleRepository
 {
     private readonly string _filePath;
     private readonly string _backupPath;
     private readonly string _tempPath;
+
+    // Two overlapping SaveAsync calls (e.g. a rapid double-click) would otherwise race on the same
+    // temp file and one could fail with a spurious IOException even though the other's write succeeds.
+    private readonly SemaphoreSlim _writeLock = new(1, 1);
 
     public JsonRuleRepository()
     {
@@ -25,35 +29,36 @@ public sealed class JsonRuleRepository : IRuleRepository
         _tempPath = Path.Combine(directory, "rules.json.tmp");
     }
 
-    public async Task<RuleLoadResult> LoadAsync()
+    public async Task<RuleStoreLoadResult> LoadAsync()
     {
         if (!File.Exists(_filePath))
         {
-            return new RuleLoadResult([], Warning: null);
+            return new RuleStoreLoadResult(RuleStore.Empty, Warning: null);
         }
 
         try
         {
             await using var stream = File.OpenRead(_filePath);
-            var rules = await JsonSerializer.DeserializeAsync<List<Rule>>(stream) ?? [];
-            return new RuleLoadResult(rules, Warning: null);
+            var store = await JsonSerializer.DeserializeAsync<RuleStore>(stream) ?? RuleStore.Empty;
+            return new RuleStoreLoadResult(store, Warning: null);
         }
         catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
         {
             TryBackupCorruptedFile();
-            return new RuleLoadResult(
-                [],
+            return new RuleStoreLoadResult(
+                RuleStore.Empty,
                 Warning: "The saved rules file was corrupted and has been reset. A backup was saved as rules.json.bak.");
         }
     }
 
-    public async Task SaveAsync(IReadOnlyList<Rule> rules)
+    public async Task SaveAsync(RuleStore store)
     {
+        await _writeLock.WaitAsync();
         try
         {
             await using (var stream = File.Create(_tempPath))
             {
-                await JsonSerializer.SerializeAsync(stream, rules, new JsonSerializerOptions { WriteIndented = true });
+                await JsonSerializer.SerializeAsync(stream, store, new JsonSerializerOptions { WriteIndented = true });
             }
 
             File.Move(_tempPath, _filePath, overwrite: true);
@@ -61,6 +66,10 @@ public sealed class JsonRuleRepository : IRuleRepository
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             throw new RulePersistenceException("Could not save rules to disk.", ex);
+        }
+        finally
+        {
+            _writeLock.Release();
         }
     }
 

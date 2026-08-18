@@ -2,14 +2,14 @@ using WaveRouter.Core.Models;
 
 namespace WaveRouter.Core.Abstractions;
 
-/// <summary>Result of loading rules: <see cref="Warning"/> is set when the store was corrupted and had to be reset (see docs/use-cases/rule-persistence.md).</summary>
-public sealed record RuleLoadResult(IReadOnlyList<Rule> Rules, string? Warning);
+/// <summary>Result of loading the store: <see cref="Warning"/> is set when it was corrupted and had to be reset (see docs/use-cases/rule-persistence.md).</summary>
+public sealed record RuleStoreLoadResult(RuleStore Store, string? Warning);
 
 public interface IRuleRepository
 {
-    /// <summary>Returns an empty list on first run (no file yet). Throws <see cref="Errors.RulePersistenceException"/> on unrecoverable errors.</summary>
-    Task<RuleLoadResult> LoadAsync();
+    /// <summary>Returns an empty store on first run (no file yet). Throws <see cref="Errors.RulePersistenceException"/> on unrecoverable errors.</summary>
+    Task<RuleStoreLoadResult> LoadAsync();
 
-    /// <summary>Persists the full rule set, replacing whatever was stored before. Throws <see cref="Errors.RulePersistenceException"/> on failure.</summary>
-    Task SaveAsync(IReadOnlyList<Rule> rules);
+    /// <summary>Persists the full store, replacing whatever was stored before. Throws <see cref="Errors.RulePersistenceException"/> on failure.</summary>
+    Task SaveAsync(RuleStore store);
 }

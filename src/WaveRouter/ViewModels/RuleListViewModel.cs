@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using WaveRouter.Core.Abstractions;
 using WaveRouter.Core.Errors;
+using WaveRouter.Core.Models;
+using WaveRouter.Core.Rules;
 using WaveRouter.Mvvm;
 using MessageBox = System.Windows.MessageBox;
 using MessageBoxButton = System.Windows.MessageBoxButton;
@@ -9,20 +11,23 @@ using MessageBoxResult = System.Windows.MessageBoxResult;
 
 namespace WaveRouter.ViewModels;
 
-/// <summary>Backs the rule list + detail panel in <see cref="MainWindow"/>.
-/// See docs/use-cases/rule-management.md and docs/use-cases/rule-persistence.md.</summary>
+/// <summary>Backs the rule list + detail panel in <see cref="MainWindow"/>, and the rule-creation half of
+/// the new-app prompt. See docs/use-cases/rule-management.md and docs/use-cases/rule-persistence.md.</summary>
 public sealed class RuleListViewModel : ObservableObject
 {
     private readonly IRuleRepository _repository;
+    private readonly List<string> _ignoredExecutables;
     private RuleViewModel? _selectedRule;
     private string? _validationError;
     private string? _statusMessage;
 
-    public RuleListViewModel(IRuleRepository repository, RuleLoadResult initialLoad)
+    public RuleListViewModel(IRuleRepository repository, ITrackProvider trackProvider, RuleStoreLoadResult initialLoad)
     {
         _repository = repository;
-        Rules = new ObservableCollection<RuleViewModel>(initialLoad.Rules.Select(r => new RuleViewModel(r)));
+        Rules = new ObservableCollection<RuleViewModel>(initialLoad.Store.Rules.Select(r => new RuleViewModel(r)));
+        _ignoredExecutables = [.. initialLoad.Store.IgnoredExecutables];
         _statusMessage = initialLoad.Warning;
+        AvailableTracks = trackProvider.GetAvailableTracks();
 
         AddRuleCommand = new RelayCommand(_ => AddRule());
         SaveRuleCommand = new RelayCommand(async _ => await SaveSelectedRuleAsync());
@@ -30,6 +35,12 @@ public sealed class RuleListViewModel : ObservableObject
     }
 
     public ObservableCollection<RuleViewModel> Rules { get; }
+
+    /// <summary>Track names read from active Wave Link output devices — empty if Wave Link isn't running.
+    /// The track field stays free text either way (see docs/use-cases/read-wave-link-tracks.md).</summary>
+    public IReadOnlyList<string> AvailableTracks { get; }
+
+    public IReadOnlyList<string> IgnoredExecutables => _ignoredExecutables;
 
     public RuleViewModel? SelectedRule
     {
@@ -60,6 +71,30 @@ public sealed class RuleListViewModel : ObservableObject
         var rule = new RuleViewModel();
         Rules.Add(rule);
         SelectedRule = rule;
+    }
+
+    /// <summary>Called from the new-app prompt once the user picked a track — creates and persists the
+    /// rule directly, no inline validation needed since both fields are already known-good.</summary>
+    public async Task AddRuleFromDetectionAsync(string executableName, string trackName)
+    {
+        var rule = new RuleViewModel { ExecutableName = executableName, TrackName = trackName };
+        rule.MarkSaved();
+        Rules.Add(rule);
+        await PersistAsync();
+    }
+
+    /// <summary>Called from the new-app prompt when the user dismisses it — never prompt for this
+    /// executable again.</summary>
+    public async Task IgnoreExecutableAsync(string executableName)
+    {
+        var normalized = RuleMatcher.NormalizeExecutableName(executableName);
+        if (_ignoredExecutables.Any(e => string.Equals(RuleMatcher.NormalizeExecutableName(e), normalized, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        _ignoredExecutables.Add(executableName);
+        await PersistAsync();
     }
 
     private async Task SaveSelectedRuleAsync()
@@ -126,7 +161,7 @@ public sealed class RuleListViewModel : ObservableObject
         try
         {
             var savedRules = Rules.Where(r => !r.IsNew).Select(r => r.ToRule()).ToList();
-            await _repository.SaveAsync(savedRules);
+            await _repository.SaveAsync(new RuleStore(savedRules, _ignoredExecutables));
             StatusMessage = null;
         }
         catch (RulePersistenceException ex)

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using WaveRouter.Core.Abstractions;
+using WaveRouter.Infrastructure.Audio;
 using WaveRouter.Infrastructure.Persistence;
 using WaveRouter.Themes;
 using WaveRouter.Tray;
@@ -29,11 +30,13 @@ public partial class App : System.Windows.Application
 
         var services = new ServiceCollection();
         services.AddSingleton<IRuleRepository, JsonRuleRepository>();
+        services.AddSingleton<ITrackProvider, WaveLinkTrackProvider>();
         _services = services.BuildServiceProvider();
 
         var repository = _services.GetRequiredService<IRuleRepository>();
+        var trackProvider = _services.GetRequiredService<ITrackProvider>();
         var initialLoad = await repository.LoadAsync();
-        var ruleListViewModel = new RuleListViewModel(repository, initialLoad);
+        var ruleListViewModel = new RuleListViewModel(repository, trackProvider, initialLoad);
 
         _tray = new TrayIconManager(ruleListViewModel);
         _tray.Start();

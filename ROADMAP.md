@@ -14,8 +14,9 @@ Living document — update after each completed task or scope change.
 ## v1
 
 - [ ] Auto-start with Windows — [use case](docs/use-cases/windows-autostart.md)
-- [ ] Dynamic reading of Wave Link's available tracks/Local Inputs (instead of manual entry) — [use case](docs/use-cases/read-wave-link-tracks.md)
-- [ ] Discreet notifications when an automatic routing happens — [use case](docs/use-cases/routing-notifications.md)
+- [x] Dynamic reading of Wave Link's available tracks (via device enumeration, not Wave Link's config file — see CLAUDE.md) — [use case](docs/use-cases/read-wave-link-tracks.md)
+- [x] Popup prompting the user to route an app the first time it's seen unconfigured, with a persisted "ignore this app" choice — not originally in the use case docs, added based on user feedback; covers most of what routing-notifications.md's "notify on routing" describes too
+- [ ] Discreet notifications when an automatic routing happens (the settings on/off toggle specifically — success/failure balloons already exist) — [use case](docs/use-cases/routing-notifications.md)
 - [ ] Pattern-based rules (partial process name, wildcard) instead of exact match only
 - [ ] Routing history/log
 

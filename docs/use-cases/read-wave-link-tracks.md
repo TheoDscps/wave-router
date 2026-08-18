@@ -2,6 +2,8 @@
 
 **Category**: Nice-to-have
 
+**Implementation note**: built via Windows device enumeration (`WaveLinkTrackProvider`), not by reading Wave Link's config file as originally planned below — Wave Link registers each track as a real Windows playback device, which turned out to be simpler and avoids depending on an undocumented file format. The user-facing behavior (main flow, alternate/error flows, acceptance criteria) is unchanged; see CLAUDE.md's "Resolved decisions" for the technical writeup.
+
 ## User story
 As a user, I want the app to automatically list the available Wave Link tracks, so that I can create routing rules without typing track names manually.
 

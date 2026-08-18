@@ -14,13 +14,16 @@ public sealed class TrayIconManager : IDisposable
     private readonly RuleListViewModel _ruleListViewModel;
     private readonly NotifyIcon _icon;
     private readonly RuleMatchCoordinator _matchCoordinator;
+    private readonly NewAppPromptCoordinator _promptCoordinator;
     private MainWindow? _mainWindow;
     private StyleGuideWindow? _styleGuideWindow;
 
     public TrayIconManager(RuleListViewModel ruleListViewModel)
     {
         _ruleListViewModel = ruleListViewModel;
-        _matchCoordinator = new RuleMatchCoordinator(new AudioSessionWatcher(), new PolicyConfigAudioRouter(), ruleListViewModel);
+        var router = new PolicyConfigAudioRouter();
+        _matchCoordinator = new RuleMatchCoordinator(new AudioSessionWatcher(), router, ruleListViewModel);
+        _promptCoordinator = new NewAppPromptCoordinator(_matchCoordinator, router, ruleListViewModel);
 
         var menu = new ContextMenuStrip();
         menu.Items.Add("Ouvrir les règles", null, (_, _) => ShowMainWindow());
@@ -41,6 +44,7 @@ public sealed class TrayIconManager : IDisposable
     public void Start()
     {
         _matchCoordinator.SessionEvaluated += OnSessionEvaluated;
+        _promptCoordinator.RoutingApplied += OnSessionEvaluated;
         _matchCoordinator.Start();
     }
 
@@ -69,11 +73,10 @@ public sealed class TrayIconManager : IDisposable
     {
         if (result.MatchedRule is not { } rule)
         {
-            _icon.BalloonTipTitle = "Nouvelle source audio";
-            _icon.BalloonTipText = $"{result.Session.DisplayName} ({result.Session.ProcessName}) — aucune règle";
-            _icon.BalloonTipIcon = ToolTipIcon.None;
+            return;
         }
-        else if (result.Routing is { Success: true })
+
+        if (result.Routing is { Success: true })
         {
             _icon.BalloonTipTitle = "Routage effectué";
             _icon.BalloonTipText = $"{result.Session.DisplayName} → {rule.TrackName}";
@@ -92,6 +95,8 @@ public sealed class TrayIconManager : IDisposable
     public void Dispose()
     {
         _matchCoordinator.SessionEvaluated -= OnSessionEvaluated;
+        _promptCoordinator.RoutingApplied -= OnSessionEvaluated;
+        _promptCoordinator.Dispose();
         _matchCoordinator.Dispose();
         _icon.Visible = false;
         _icon.Dispose();

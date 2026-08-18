@@ -9,6 +9,7 @@ public partial class MainWindow : System.Windows.Window
     {
         InitializeComponent();
         DataContext = viewModel;
+        WindowChromeHelper.ApplyDarkTitleBar(this);
     }
 
     /// <summary>Closing the window hides it — the app keeps running in the tray until "Quitter" is used.</summary>

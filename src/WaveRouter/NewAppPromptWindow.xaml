@@ -1,0 +1,26 @@
+<Window x:Class="WaveRouter.NewAppPromptWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Nouvelle app détectée"
+        Width="380" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen" Topmost="True"
+        ShowInTaskbar="False">
+    <StackPanel Margin="{StaticResource PaddingCard}">
+
+        <TextBlock Text="Nouvelle app détectée" Style="{StaticResource Heading}" Margin="0,0,0,4" />
+        <TextBlock Text="{Binding Session.DisplayName}" Margin="0,0,0,2" />
+        <TextBlock Text="{Binding Session.ProcessName}" Style="{StaticResource MonoText}" Margin="0,0,0,20" />
+
+        <TextBlock Text="Router vers quelle piste ?" Style="{StaticResource TextSecondary}" Margin="0,0,0,6" />
+        <ComboBox ItemsSource="{Binding AvailableTracks}"
+                  Text="{Binding SelectedTrack, UpdateSourceTrigger=PropertyChanged}"
+                  IsEditable="True" Margin="0,0,0,20" />
+
+        <StackPanel Orientation="Horizontal">
+            <Button Content="Router" Style="{StaticResource AccentButton}" Command="{Binding RouteCommand}"
+                    Margin="0,0,12,0" MinWidth="110" />
+            <Button Content="Ignorer" Command="{Binding IgnoreCommand}" MinWidth="110" />
+        </StackPanel>
+
+    </StackPanel>
+</Window>

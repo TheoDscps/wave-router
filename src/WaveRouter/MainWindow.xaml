@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:conv="clr-namespace:WaveRouter.Converters"
         Title="WaveRouter"
-        Width="640" Height="420" MinWidth="360" MinHeight="280">
+        Width="760" Height="500" MinWidth="480" MinHeight="360">
 
     <Window.Resources>
         <conv:NullToVisibilityConverter x:Key="NullToVisibility" />
@@ -15,14 +15,14 @@
         <Border DockPanel.Dock="Top"
                 Background="{DynamicResource BgSurfaceElevatedBrush}"
                 BorderBrush="{DynamicResource WarningBrush}" BorderThickness="0,0,0,1"
-                Padding="{StaticResource PaddingControl}"
+                Padding="{StaticResource PaddingCard}"
                 Visibility="{Binding StatusMessage, Converter={StaticResource NullToVisibility}}">
             <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource WarningBrush}" TextWrapping="Wrap" />
         </Border>
 
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="240" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
@@ -32,14 +32,30 @@
                 <DockPanel Margin="{StaticResource PaddingCard}">
                     <TextBlock DockPanel.Dock="Top" Text="Règles" Style="{StaticResource Heading}"
                                Margin="0,0,0,16" />
+
                     <Button DockPanel.Dock="Bottom" Content="+ Ajouter une règle" Style="{StaticResource AccentButton}"
                             Command="{Binding AddRuleCommand}" HorizontalAlignment="Stretch" Margin="0,12,0,0" />
 
+                    <TextBlock DockPanel.Dock="Top" Text="Aucune règle pour le moment."
+                               TextWrapping="Wrap" Margin="0,0,0,8">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource TextSecondary}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Rules.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
                     <ListBox ItemsSource="{Binding Rules}" SelectedItem="{Binding SelectedRule}"
-                             Background="Transparent" BorderThickness="0">
+                             Background="Transparent" BorderThickness="0"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel Margin="0,4">
+                                <StackPanel>
                                     <TextBlock Text="{Binding ExecutableName}" FontWeight="{StaticResource FontWeightSemiBold}" />
                                     <TextBlock Text="{Binding TrackName}" Style="{StaticResource MonoText}" />
                                 </StackPanel>
@@ -52,35 +68,52 @@
             <!-- Detail / empty state -->
             <Grid Grid.Column="1" Background="{DynamicResource BgBaseBrush}">
 
+                <!-- Empty state: shown when no rule is selected -->
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="320"
                             Visibility="{Binding SelectedRule, Converter={StaticResource NullToVisibility}, ConverterParameter=Invert}">
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,20">
+                        <Rectangle Width="4" Height="14" RadiusX="2" RadiusY="2" Margin="0,0,5,0" Fill="{DynamicResource TextSecondaryBrush}" Opacity="0.4" />
+                        <Rectangle Width="4" Height="26" RadiusX="2" RadiusY="2" Margin="0,0,5,0" Fill="{DynamicResource AccentBrush}" Opacity="0.6" />
+                        <Rectangle Width="4" Height="18" RadiusX="2" RadiusY="2" Margin="0,0,5,0" Fill="{DynamicResource TextSecondaryBrush}" Opacity="0.4" />
+                        <Rectangle Width="4" Height="30" RadiusX="2" RadiusY="2" Margin="0,0,5,0" Fill="{DynamicResource AccentBrush}" Opacity="0.6" />
+                        <Rectangle Width="4" Height="12" RadiusX="2" RadiusY="2" Fill="{DynamicResource TextSecondaryBrush}" Opacity="0.4" />
+                    </StackPanel>
+
                     <TextBlock Text="Sélectionne une règle, ou ajoutes-en une nouvelle."
                                Style="{StaticResource TextSecondary}" TextAlignment="Center" TextWrapping="Wrap" />
                 </StackPanel>
 
-                <StackPanel Margin="24" MaxWidth="360" HorizontalAlignment="Left"
-                            DataContext="{Binding SelectedRule}"
-                            Visibility="{Binding Converter={StaticResource NullToVisibility}, RelativeSource={RelativeSource Self}}">
+                <!-- Detail form: shown when a rule is selected -->
+                <Border Style="{StaticResource Card}" Width="360" HorizontalAlignment="Left" VerticalAlignment="Top"
+                        Margin="{StaticResource PaddingCard}"
+                        DataContext="{Binding SelectedRule}"
+                        Visibility="{Binding Converter={StaticResource NullToVisibility}}">
+                    <StackPanel>
 
-                    <TextBlock Text="Exécutable" Style="{StaticResource TextSecondary}" Margin="0,0,0,4" />
-                    <TextBox Text="{Binding ExecutableName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16" />
+                        <TextBlock Text="Exécutable" Style="{StaticResource TextSecondary}" Margin="0,0,0,6" />
+                        <TextBox Text="{Binding ExecutableName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,20" />
 
-                    <TextBlock Text="Piste Wave Link" Style="{StaticResource TextSecondary}" Margin="0,0,0,4" />
-                    <TextBox Text="{Binding TrackName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16" />
+                        <TextBlock Text="Piste Wave Link" Style="{StaticResource TextSecondary}" Margin="0,0,0,6" />
+                        <ComboBox ItemsSource="{Binding DataContext.AvailableTracks, RelativeSource={RelativeSource AncestorType=Window}}"
+                                  Text="{Binding TrackName, UpdateSourceTrigger=PropertyChanged}"
+                                  IsEditable="True" Margin="0,0,0,20" />
 
-                    <TextBlock Text="{Binding DataContext.ValidationError, RelativeSource={RelativeSource AncestorType=Window}}"
-                               Foreground="{DynamicResource ErrorBrush}" TextWrapping="Wrap" Margin="0,0,0,12"
-                               Visibility="{Binding DataContext.ValidationError, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource NullToVisibility}}" />
+                        <TextBlock Text="{Binding DataContext.ValidationError, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Foreground="{DynamicResource ErrorBrush}" TextWrapping="Wrap" Margin="0,0,0,16"
+                                   Visibility="{Binding DataContext.ValidationError, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource NullToVisibility}}" />
 
-                    <StackPanel Orientation="Horizontal">
-                        <Button Content="Enregistrer" Style="{StaticResource AccentButton}"
-                                Command="{Binding DataContext.SaveRuleCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                Margin="0,0,12,0" />
-                        <Button Content="Supprimer"
-                                Command="{Binding DataContext.DeleteRuleCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Enregistrer" Style="{StaticResource AccentButton}"
+                                    Command="{Binding DataContext.SaveRuleCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    Margin="0,0,12,0" MinWidth="110" />
+                            <Button Content="Supprimer"
+                                    Command="{Binding DataContext.DeleteRuleCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    MinWidth="110" />
+                        </StackPanel>
+
                     </StackPanel>
-
-                </StackPanel>
+                </Border>
 
             </Grid>
         </Grid>

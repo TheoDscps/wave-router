@@ -48,14 +48,16 @@ public partial class App : System.Windows.Application
         services.AddSingleton<PolicyConfigAudioRouter>();
         services.AddSingleton<IAudioRouter>(sp => sp.GetRequiredService<PolicyConfigAudioRouter>());
         services.AddSingleton<IExistingRoutingScanner>(sp => sp.GetRequiredService<PolicyConfigAudioRouter>());
+        services.AddSingleton<IWaveLinkMixerConfigReader, WaveLinkMixerConfigReader>();
         _services = services.BuildServiceProvider();
 
         var repository = _services.GetRequiredService<IRuleRepository>();
         var trackProvider = _services.GetRequiredService<ITrackProvider>();
         var routingScanner = _services.GetRequiredService<IExistingRoutingScanner>();
+        var mixerConfigReader = _services.GetRequiredService<IWaveLinkMixerConfigReader>();
         var router = _services.GetRequiredService<IAudioRouter>();
         var initialLoad = await repository.LoadAsync();
-        var ruleListViewModel = new RuleListViewModel(repository, trackProvider, routingScanner, initialLoad);
+        var ruleListViewModel = new RuleListViewModel(repository, trackProvider, routingScanner, mixerConfigReader, initialLoad);
 
         _tray = new TrayIconManager(ruleListViewModel, router);
         _tray.Start();

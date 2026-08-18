@@ -17,15 +17,17 @@ public sealed class RuleListViewModel : ObservableObject
 {
     private readonly IRuleRepository _repository;
     private readonly IExistingRoutingScanner _routingScanner;
+    private readonly IWaveLinkMixerConfigReader _mixerConfigReader;
     private readonly List<string> _ignoredExecutables;
     private RuleViewModel? _selectedRule;
     private string? _validationError;
     private string? _statusMessage;
 
-    public RuleListViewModel(IRuleRepository repository, ITrackProvider trackProvider, IExistingRoutingScanner routingScanner, RuleStoreLoadResult initialLoad)
+    public RuleListViewModel(IRuleRepository repository, ITrackProvider trackProvider, IExistingRoutingScanner routingScanner, IWaveLinkMixerConfigReader mixerConfigReader, RuleStoreLoadResult initialLoad)
     {
         _repository = repository;
         _routingScanner = routingScanner;
+        _mixerConfigReader = mixerConfigReader;
         Rules = new ObservableCollection<RuleViewModel>(initialLoad.Store.Rules.Select(r => new RuleViewModel(r)));
         _ignoredExecutables = [.. initialLoad.Store.IgnoredExecutables];
         _statusMessage = initialLoad.Warning;
@@ -101,13 +103,23 @@ public sealed class RuleListViewModel : ObservableObject
         await PersistAsync();
     }
 
-    /// <summary>Scans currently running processes for audio routing already assigned at the Windows level
-    /// (e.g. set manually via Settings before WaveRouter existed) and creates rules for any that aren't
-    /// already covered. Only running processes can be checked — Windows resolves the persisted assignment
-    /// via a live PID, there's no way to query "what's assigned to chrome.exe in general".</summary>
+    /// <summary>Imports audio routing already known elsewhere, from two sources: Wave Link's own Automixer
+    /// (via <see cref="IWaveLinkMixerConfigReader"/> — works even for apps that aren't currently running,
+    /// since Wave Link remembers apps it has seen before) and Windows' per-app default-device setting for
+    /// whatever's currently running (via <see cref="IExistingRoutingScanner"/> — needs a live process,
+    /// there's no way to ask Windows "what's assigned to chrome.exe in general" without one). Skips
+    /// anything already covered by an existing rule.</summary>
     private async Task ImportExistingAssignmentsAsync()
     {
         var imported = 0;
+
+        foreach (var known in _mixerConfigReader.ReadKnownAssignments())
+        {
+            if (TryImportRule(known.ExecutableName, known.TrackName))
+            {
+                imported++;
+            }
+        }
 
         foreach (var process in System.Diagnostics.Process.GetProcesses())
         {
@@ -116,23 +128,10 @@ public sealed class RuleListViewModel : ObservableObject
                 try
                 {
                     var track = _routingScanner.GetExistingTrackAssignment(process.Id);
-                    if (track is null)
+                    if (track is not null && TryImportRule(process.ProcessName, track))
                     {
-                        continue;
+                        imported++;
                     }
-
-                    var executableName = process.ProcessName;
-                    var alreadyCovered = Rules.Any(r => !r.IsNew &&
-                        string.Equals(RuleMatcher.NormalizeExecutableName(r.ExecutableName), RuleMatcher.NormalizeExecutableName(executableName), StringComparison.OrdinalIgnoreCase));
-                    if (alreadyCovered)
-                    {
-                        continue;
-                    }
-
-                    var rule = new RuleViewModel { ExecutableName = executableName, TrackName = track };
-                    rule.MarkSaved();
-                    Rules.Add(rule);
-                    imported++;
                 }
                 catch (InvalidOperationException)
                 {
@@ -148,10 +147,27 @@ public sealed class RuleListViewModel : ObservableObject
 
         StatusMessage = imported switch
         {
-            0 => "No existing Windows-level audio assignment found to import.",
+            0 => "No existing Wave Link or Windows audio assignment found to import.",
             1 => "Imported 1 existing assignment.",
             _ => $"Imported {imported} existing assignments.",
         };
+    }
+
+    /// <summary>Adds a rule for <paramref name="executableName"/> if nothing already covers it (an
+    /// existing rule, or one added earlier in the same import pass). Returns whether it was added.</summary>
+    private bool TryImportRule(string executableName, string trackName)
+    {
+        var alreadyCovered = Rules.Any(r => !r.IsNew &&
+            string.Equals(RuleMatcher.NormalizeExecutableName(r.ExecutableName), RuleMatcher.NormalizeExecutableName(executableName), StringComparison.OrdinalIgnoreCase));
+        if (alreadyCovered)
+        {
+            return false;
+        }
+
+        var rule = new RuleViewModel { ExecutableName = executableName, TrackName = trackName };
+        rule.MarkSaved();
+        Rules.Add(rule);
+        return true;
     }
 
     private async Task SaveSelectedRuleAsync()

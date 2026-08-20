@@ -216,20 +216,32 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBox">
                     <Grid>
-                        <Border Background="{TemplateBinding Background}"
+                        <!-- Two columns, not one overlaid cell: the editable TextBox (column 0) and the
+                             dropdown ToggleButton (column 1) must never share hit-test area, or whichever
+                             is on top of the z-order (the TextBox, since it must stay clickable for typing)
+                             swallows clicks meant for the arrow — confirmed live: with a single shared cell,
+                             the dropdown only opened when clicking the outermost few pixels the TextBox's
+                             margin didn't cover, past the visible arrow glyph. -->
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="28" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.ColumnSpan="2"
+                                Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="{StaticResource RadiusSm}" />
 
-                        <ToggleButton Style="{StaticResource ComboBoxToggleButton}"
+                        <ToggleButton Grid.Column="1" Style="{StaticResource ComboBoxToggleButton}"
                                       IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
 
-                        <ContentPresenter x:Name="ContentSite" IsHitTestVisible="False"
+                        <ContentPresenter x:Name="ContentSite" Grid.Column="0" IsHitTestVisible="False"
                                           Content="{TemplateBinding SelectionBoxItem}"
                                           Margin="{TemplateBinding Padding}"
                                           HorizontalAlignment="Left" VerticalAlignment="Center" />
 
-                        <TextBox x:Name="PART_EditableTextBox"
+                        <TextBox x:Name="PART_EditableTextBox" Grid.Column="0"
                                  Background="Transparent" BorderThickness="0"
                                  Foreground="{DynamicResource TextPrimaryBrush}"
                                  CaretBrush="{DynamicResource AccentBrush}"
@@ -239,7 +251,7 @@
                                  Focusable="{TemplateBinding IsEditable}"
                                  IsReadOnly="{TemplateBinding IsReadOnly}" />
 
-                        <Popup x:Name="Popup" IsOpen="{TemplateBinding IsDropDownOpen}"
+                        <Popup x:Name="Popup" Grid.ColumnSpan="2" IsOpen="{TemplateBinding IsDropDownOpen}"
                                Placement="Bottom" AllowsTransparency="True" Focusable="False" PopupAnimation="None">
                             <Border Background="{DynamicResource BgSurfaceElevatedBrush}"
                                     BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"

@@ -18,29 +18,104 @@ namespace WaveRouter.Infrastructure.Audio;
 /// prompting about, since the user didn't just launch them. Everything else — a session created after
 /// <see cref="Start"/>, or one that existed but was silent and only later becomes active — raises
 /// <see cref="NewSessionDetected"/>: a genuine "an app just started making sound" event.
+///
+/// The device list isn't a one-time snapshot: an <see cref="IMMNotificationClient"/> keeps it in sync with
+/// devices being plugged in, unplugged, enabled or disabled after <see cref="Start"/> — e.g. switching
+/// audio output, or a headset reconnecting. Without this, a session created on a device that appeared
+/// after <see cref="Start"/> would silently go unnoticed: no rule match, no unknown-app prompt, nothing
+/// (confirmed as the actual cause of a real missed detection, not just a theoretical gap).
 /// </summary>
 public sealed class AudioSessionWatcher : IAudioSessionWatcher
 {
     private readonly MMDeviceEnumerator _enumerator = new();
-    private readonly List<MMDevice> _devices = [];
+    private readonly Dictionary<string, MMDevice> _devices = [];
     private readonly HashSet<int> _notifiedProcessIds = [];
     private readonly Dictionary<PendingSessionHandler, AudioSessionControl> _pendingSessions = [];
+    private readonly EndpointNotificationClient _notificationClient;
 
     public event EventHandler<AudioSessionInfo>? NewSessionDetected;
     public event EventHandler<AudioSessionInfo>? ExistingActiveSessionDetected;
+
+    public AudioSessionWatcher()
+    {
+        _notificationClient = new EndpointNotificationClient(this);
+    }
 
     public void Start()
     {
         foreach (var device in _enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active))
         {
-            _devices.Add(device);
-            device.AudioSessionManager.OnSessionCreated += OnSessionCreated;
+            TrackDevice(device, isInitialScan: true);
+        }
 
-            var sessions = device.AudioSessionManager.Sessions;
-            for (var i = 0; i < sessions.Count; i++)
+        _enumerator.RegisterEndpointNotificationCallback(_notificationClient);
+    }
+
+    /// <summary>Starts watching a render device — either found during <see cref="Start"/>'s initial scan,
+    /// or one that appeared/became active afterwards. In the latter case any session already on it is
+    /// treated as new (<paramref name="isInitialScan"/> false): the device wasn't there when watching
+    /// began, so nothing on it could have been "already playing before WaveRouter opened".</summary>
+    private void TrackDevice(MMDevice device, bool isInitialScan)
+    {
+        lock (_devices)
+        {
+            if (!_devices.TryAdd(device.ID, device))
             {
-                TrackSession(sessions[i], isInitialScan: true);
+                device.Dispose();
+                return;
             }
+        }
+
+        device.AudioSessionManager.OnSessionCreated += OnSessionCreated;
+
+        var sessions = device.AudioSessionManager.Sessions;
+        for (var i = 0; i < sessions.Count; i++)
+        {
+            TrackSession(sessions[i], isInitialScan);
+        }
+    }
+
+    private void OnDeviceAvailable(string deviceId)
+    {
+        lock (_devices)
+        {
+            if (_devices.ContainsKey(deviceId))
+            {
+                return;
+            }
+        }
+
+        MMDevice device;
+        try
+        {
+            device = _enumerator.GetDevice(deviceId);
+        }
+        catch (COMException)
+        {
+            // Gone again already (e.g. a device that flickers add/remove) — nothing to track.
+            return;
+        }
+
+        if (device.DataFlow != DataFlow.Render || device.State != DeviceState.Active)
+        {
+            device.Dispose();
+            return;
+        }
+
+        TrackDevice(device, isInitialScan: false);
+    }
+
+    private void OnDeviceUnavailable(string deviceId)
+    {
+        lock (_devices)
+        {
+            if (!_devices.Remove(deviceId, out var device))
+            {
+                return;
+            }
+
+            device.AudioSessionManager.OnSessionCreated -= OnSessionCreated;
+            device.Dispose();
         }
     }
 
@@ -148,6 +223,8 @@ public sealed class AudioSessionWatcher : IAudioSessionWatcher
 
     public void Dispose()
     {
+        _enumerator.UnregisterEndpointNotificationCallback(_notificationClient);
+
         foreach (var (handler, session) in _pendingSessions)
         {
             try
@@ -161,10 +238,15 @@ public sealed class AudioSessionWatcher : IAudioSessionWatcher
 
         _pendingSessions.Clear();
 
-        foreach (var device in _devices)
+        lock (_devices)
         {
-            device.AudioSessionManager.OnSessionCreated -= OnSessionCreated;
-            device.Dispose();
+            foreach (var device in _devices.Values)
+            {
+                device.AudioSessionManager.OnSessionCreated -= OnSessionCreated;
+                device.Dispose();
+            }
+
+            _devices.Clear();
         }
 
         _enumerator.Dispose();
@@ -197,6 +279,36 @@ public sealed class AudioSessionWatcher : IAudioSessionWatcher
         }
 
         public void OnSessionDisconnected(AudioSessionDisconnectReason disconnectReason)
+        {
+        }
+    }
+
+    /// <summary>Keeps the tracked device list in sync after <see cref="Start"/> — forwards only the
+    /// add/remove/state-change callbacks the watcher cares about. Default-device changes are irrelevant
+    /// here: every active render device is watched already, not just the current default.</summary>
+    private sealed class EndpointNotificationClient(AudioSessionWatcher owner) : IMMNotificationClient
+    {
+        public void OnDeviceAdded(string pwstrDeviceId) => owner.OnDeviceAvailable(pwstrDeviceId);
+
+        public void OnDeviceRemoved(string deviceId) => owner.OnDeviceUnavailable(deviceId);
+
+        public void OnDeviceStateChanged(string deviceId, DeviceState newState)
+        {
+            if (newState == DeviceState.Active)
+            {
+                owner.OnDeviceAvailable(deviceId);
+            }
+            else
+            {
+                owner.OnDeviceUnavailable(deviceId);
+            }
+        }
+
+        public void OnDefaultDeviceChanged(DataFlow flow, Role role, string defaultDeviceId)
+        {
+        }
+
+        public void OnPropertyValueChanged(string pwstrDeviceId, PropertyKey key)
         {
         }
     }

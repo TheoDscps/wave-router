@@ -60,6 +60,12 @@ public sealed class NewAppPromptCoordinator : IDisposable
             ShowNextIfIdle();
         };
         _currentWindow.Show();
+
+        // This window pops up unprompted, often over a fullscreen game that's aggressively holding focus —
+        // Show() alone can leave it topmost-but-not-activated in that case, and an unactivated Topmost
+        // window's child Popups (e.g. the track ComboBox's dropdown) can fail to composite until something
+        // forces a repaint. Activate() forces Windows to properly hand it focus and redraw.
+        _currentWindow.Activate();
     }
 
     public void Dispose()

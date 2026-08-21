@@ -55,4 +55,26 @@ public sealed class WindowsStartupRegistration : IStartupRegistration
             return false;
         }
     }
+
+    /// <summary>Points the Run key at an explicit exe path rather than the current process's own path — used
+    /// by <see cref="SelfRelocation"/>, where the process making the call is the OLD exe about to be replaced,
+    /// not the relocated one the key should end up pointing at.</summary>
+    internal bool SetEnabledForExePath(string exePath)
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(RunKeyPath, writable: true);
+            if (key is null)
+            {
+                return false;
+            }
+
+            key.SetValue(ValueName, $"\"{exePath}\"");
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
 }

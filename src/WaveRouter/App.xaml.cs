@@ -21,6 +21,12 @@ public partial class App : System.Windows.Application
     {
         base.OnStartup(e);
 
+        if (SelfRelocation.RelocateAndRelaunchIfNeeded())
+        {
+            Shutdown();
+            return;
+        }
+
         // Fire-and-forget async command handlers (RelayCommand) can't propagate exceptions to their
         // caller — without this, a failure deep in an async chain (e.g. a save) fails completely silently.
         DispatcherUnhandledException += (_, args) =>
